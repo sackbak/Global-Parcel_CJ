@@ -1105,7 +1105,7 @@
   window.addEventListener('scroll', () => { if (currentEditable) positionToolbar(); }, true);
   window.addEventListener('resize', () => { if (currentEditable) positionToolbar(); });
 
-  // ---------- Excel/Word 붙여넣기: 표 구조 제거 + 서식만 유지 ----------
+  // ---------- Excel/Word 붙여넣기: 단일 셀 + Excel 다중 셀 일괄 ----------
   document.addEventListener('paste', (e) => {
     const target = e.target.closest && e.target.closest('.editable');
     if (!target) return;
@@ -1114,7 +1114,7 @@
     const text = e.clipboardData.getData('text/plain');
 
     if (target.classList.contains('score-cell')) {
-      // 점수 셀은 1~5 숫자만 받음
+      // 점수 셀은 1~5 숫자만 받음 (픽커 사용 권장)
       const m = text.match(/[1-5]/);
       if (m) {
         target.textContent = m[0];
@@ -1125,11 +1125,56 @@
       return;
     }
 
+    // Excel 다중 셀 감지: 탭(\t)이 있으면 다중 열, 줄바꿈이 여러 개면 다중 행
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const hasTab = normalized.includes('\t');
+    const rows = normalized.split('\n').filter(r => r !== '');
+    const isMultiCell = hasTab || rows.length > 1;
+
+    if (isMultiCell) {
+      // TSV → 평탄화된 값 배열
+      const values = [];
+      rows.forEach(row => {
+        const cols = hasTab ? row.split('\t') : [row];
+        cols.forEach(v => values.push(v));
+      });
+      // 후행 빈 값 제거
+      while (values.length && values[values.length - 1].trim() === '') values.pop();
+
+      if (values.length > 1) {
+        const section = target.closest('[data-page-content]');
+        const allContent = Array.from(
+          section ? section.querySelectorAll('.editable:not(.score-cell)') : []
+        );
+        const startIdx = allContent.indexOf(target);
+        if (startIdx >= 0) {
+          let filled = 0;
+          for (let i = startIdx; i < allContent.length && filled < values.length; i++) {
+            const cell = allContent[i];
+            const v = values[filled++];
+            cell.innerHTML = v
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/\n/g, '<br>');
+            const id = cell.getAttribute('data-cell-id');
+            const scope = cell.getAttribute('data-cell-scope');
+            const list = cellMap.get(id);
+            const sectionId = list?.[0]?.sectionId;
+            saveOne(scope, id, cell.innerHTML, sectionId);
+            propagate(id, cell.innerHTML, cell);
+          }
+          showSaveIndicator(`${filled}개 셀에 붙여넣기`);
+          return;
+        }
+      }
+    }
+
+    // 단일 셀 붙여넣기 (기존 동작)
     let toInsert;
     if (html) {
       toInsert = sanitizePastedHtml(html);
     } else {
-      // 일반 텍스트: 줄바꿈은 <br>로
       toInsert = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
