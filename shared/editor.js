@@ -458,7 +458,16 @@
     // 셀 포커스 안 잡혀있으면 종료
     if (!currentEditable) return;
 
-    // 2) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
+    // 2) Enter / Alt+Enter: 텍스트 셀은 줄바꿈 (점수 셀은 register에서 blur 처리됨)
+    if (e.key === 'Enter') {
+      if (!currentEditable.classList.contains('score-cell')) {
+        e.preventDefault();
+        document.execCommand('insertHTML', false, '<br>');
+        return;
+      }
+    }
+
+    // 3) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
       const k = e.key.toLowerCase();
       if (k === 'b' || k === 'i' || k === 'u') {
@@ -468,7 +477,23 @@
         triggerSaveFromToolbar();
         return;
       }
-      // 3) 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
+      // 정렬 단축키: Ctrl+L / Ctrl+E / Ctrl+R
+      if (k === 'l') {
+        e.preventDefault();
+        document.execCommand('justifyLeft');
+        triggerSaveFromToolbar();
+        return;
+      }
+      if (k === 'e') {
+        e.preventDefault();
+        document.execCommand('justifyCenter');
+        triggerSaveFromToolbar();
+        return;
+      }
+      if (k === 'r') {
+        // Ctrl+R은 새로고침이라 정렬 단축키로 잡지 않음
+      }
+      // 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
       if (e.key === '+' || e.key === '=' ) {
         e.preventDefault();
         adjustFontSize(1);
@@ -633,6 +658,10 @@
     '<button type="button" data-cmd="bold" title="굵게 (Ctrl+B)">B</button>' +
     '<button type="button" data-cmd="italic" title="기울임 (Ctrl+I)">I</button>' +
     '<button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)">U</button>' +
+    '<span class="sep"></span>' +
+    '<button type="button" data-cmd="justifyLeft" title="왼쪽 정렬">⫷</button>' +
+    '<button type="button" data-cmd="justifyCenter" title="가운데 정렬">≡</button>' +
+    '<button type="button" data-cmd="justifyRight" title="오른쪽 정렬">⫸</button>' +
     '<span class="sep"></span>' +
     '<button type="button" data-action="size-down" title="작게">A−</button>' +
     '<span class="size-label" id="size-label">−</span>' +
