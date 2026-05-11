@@ -23,25 +23,35 @@
   background: #ffe2e2 !important;
 }
 
-/* 우상단 엑셀 다운로드 버튼 (탭 네비 옆) */
-#export-btn {
+/* 우상단 버튼들 */
+#export-btn, #copy-btn {
   position: fixed;
   top: 12px;
-  right: 16px;
   z-index: 1001;
   padding: 6px 14px;
-  background: #1d7d3a;
-  color: #fff;
-  border: 1px solid #1d7d3a;
   border-radius: 4px;
   font-size: 12.5px;
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
   cursor: pointer;
   transition: background 0.12s;
+  border: 1px solid;
+}
+#export-btn {
+  right: 16px;
+  background: #1d7d3a;
+  color: #fff;
+  border-color: #1d7d3a;
 }
 #export-btn:hover { background: #155b29; }
 #export-btn:disabled { opacity: 0.6; cursor: wait; }
+#copy-btn {
+  right: 132px;
+  background: #fff;
+  color: #1a3a6c;
+  border-color: #1a3a6c;
+}
+#copy-btn:hover { background: #f4f4ee; }
 
 /* 우하단 저장 표시 */
 #save-indicator {

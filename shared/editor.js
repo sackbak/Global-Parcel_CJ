@@ -536,6 +536,59 @@
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
   });
 
+  // ---------- 표 복사 버튼 (현재 탭 표를 클립보드로) ----------
+  const copyBtn = document.createElement('button');
+  copyBtn.id = 'copy-btn';
+  copyBtn.type = 'button';
+  copyBtn.textContent = '표 복사';
+  copyBtn.title = '현재 탭의 표를 클립보드로 복사 (엑셀에 바로 붙여넣기 가능)';
+  document.body.appendChild(copyBtn);
+
+  copyBtn.addEventListener('click', async () => {
+    const activeSec = document.querySelector('[data-page-content].active');
+    if (!activeSec) return;
+    const table = activeSec.querySelector('.self-table, .comp-table');
+    if (!table) {
+      copyBtn.textContent = '표 없음';
+      setTimeout(() => copyBtn.textContent = '표 복사', 1200);
+      return;
+    }
+    // TSV (Excel/Sheets 기본)
+    const rows = [];
+    table.querySelectorAll('tr').forEach(tr => {
+      const cells = [];
+      tr.querySelectorAll('th, td').forEach(td => {
+        let txt = td.textContent.trim().replace(/\s+/g, ' ');
+        // 탭/줄바꿈 문자 들어가면 셀 분리 깨지니 공백으로
+        txt = txt.replace(/[\t\n\r]/g, ' ');
+        cells.push(txt);
+      });
+      rows.push(cells.join('\t'));
+    });
+    const tsv = rows.join('\n');
+    // HTML도 같이 (서식 유지 위해)
+    const tableHtml = '<meta charset="utf-8">' + table.outerHTML;
+    try {
+      if (navigator.clipboard && navigator.clipboard.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([tsv], {type: 'text/plain'}),
+            'text/html': new Blob([tableHtml], {type: 'text/html'})
+          })
+        ]);
+      } else {
+        // 폴백
+        await navigator.clipboard.writeText(tsv);
+      }
+      copyBtn.textContent = '복사됨';
+      setTimeout(() => copyBtn.textContent = '표 복사', 1500);
+    } catch (e) {
+      console.error('Clipboard failed', e);
+      copyBtn.textContent = '실패';
+      setTimeout(() => copyBtn.textContent = '표 복사', 1500);
+    }
+  });
+
   // ---------- 엑셀 다운로드 버튼 ----------
   const exportBtn = document.createElement('button');
   exportBtn.id = 'export-btn';
