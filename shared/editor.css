@@ -170,10 +170,54 @@ body { padding: 0 12px 24px !important; }
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
   padding: 14px;
   z-index: 10000;
-  min-width: 360px;
+  min-width: 620px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
   animation: spFadeIn 0.18s ease-out;
 }
+#score-picker .sp-body {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 16px;
+  align-items: start;
+}
+#score-picker .sp-options-wrap { min-width: 0; }
+#score-picker .sp-change-info {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  align-items: center;
+}
+#score-picker .sp-change-info .sp-arrow { color: #999; font-size: 22px; }
+#score-picker .sp-from, #score-picker .sp-to {
+  min-width: 44px;
+  padding: 4px 14px;
+  border-radius: 6px;
+  background: #f4f4ee;
+  text-align: center;
+}
+#score-picker .sp-from.score-1, #score-picker .sp-to.score-1 { color: #8a2929; }
+#score-picker .sp-from.score-2, #score-picker .sp-to.score-2 { color: #a37a00; }
+#score-picker .sp-from.score-3, #score-picker .sp-to.score-3 { color: #555; }
+#score-picker .sp-from.score-4, #score-picker .sp-to.score-4 { color: #3b6d3b; }
+#score-picker .sp-from.score-5, #score-picker .sp-to.score-5 { color: #2d5a2d; }
+#score-picker .sp-preview {
+  background: #fafaf8;
+  border: 1px solid #e8e6df;
+  border-radius: 8px;
+  padding: 8px;
+}
+#score-picker .sp-preview-label {
+  font-size: 10px;
+  color: #888;
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+#score-picker .sp-preview-svg-wrap { display: flex; justify-content: center; }
+#score-picker .sp-radar { width: 200px; height: 200px; display: block; }
 @keyframes spFadeIn {
   from { opacity: 0; transform: scale(0.95) translateY(-6px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }

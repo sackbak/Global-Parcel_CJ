@@ -1026,12 +1026,21 @@
       '<div><div class="sp-title"></div><div class="sp-sub"></div></div>' +
       '<button type="button" class="sp-close" title="닫기 (Esc)">×</button>' +
     '</div>' +
-    '<div class="sp-options">' +
-      [1, 2, 3, 4, 5].map(n =>
-        `<button type="button" data-val="${n}"><div class="sp-num">${n}</div><div class="sp-label">${SCORE_LABELS[n]}</div></button>`
-      ).join('') +
+    '<div class="sp-body">' +
+      '<div class="sp-options-wrap">' +
+        '<div class="sp-change-info"><span class="sp-from"></span> <span class="sp-arrow">→</span> <span class="sp-to"></span></div>' +
+        '<div class="sp-options">' +
+          [1, 2, 3, 4, 5].map(n =>
+            `<button type="button" data-val="${n}"><div class="sp-num">${n}</div><div class="sp-label">${SCORE_LABELS[n]}</div></button>`
+          ).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="sp-preview">' +
+        '<div class="sp-preview-label">실시간 미리보기</div>' +
+        '<div class="sp-preview-svg-wrap"></div>' +
+      '</div>' +
     '</div>' +
-    '<div class="sp-foot">키보드 1~5 / Esc 닫기</div>';
+    '<div class="sp-foot">키보드 1~5 / Esc 닫기 ・ 마우스 올리면 미리보기</div>';
   document.body.appendChild(scorePicker);
 
   let pickerTarget = null;
@@ -1058,10 +1067,30 @@
     scorePicker.querySelector('.sp-title').textContent = `${indName} ・ ${owner}`;
     scorePicker.querySelector('.sp-sub').textContent = axisName.replace(/\s+/g, ' ');
 
+    // 현재 → 변경값 인디케이터
+    scorePicker.querySelector('.sp-from').textContent = current || '?';
+    scorePicker.querySelector('.sp-from').className = 'sp-from' + (current ? ` score-${current}` : '');
+    scorePicker.querySelector('.sp-to').textContent = '?';
+    scorePicker.querySelector('.sp-to').className = 'sp-to';
+
     // 현재 점수 하이라이트
     scorePicker.querySelectorAll('button[data-val]').forEach(b => {
       b.classList.toggle('current', parseInt(b.dataset.val) === current);
     });
+
+    // 섹션의 radar SVG를 복제해서 미리보기에 박음
+    const sectionId = cell.closest('[data-page-content]')?.dataset.pageContent;
+    const info = sectionInfos.get(sectionId);
+    const sourceSvg = info?.section.querySelector('.radar-svg');
+    const previewWrap = scorePicker.querySelector('.sp-preview-svg-wrap');
+    if (sourceSvg && previewWrap) {
+      previewWrap.innerHTML = '';
+      const clone = sourceSvg.cloneNode(true);
+      clone.removeAttribute('width');
+      clone.removeAttribute('height');
+      clone.classList.add('sp-radar');
+      previewWrap.appendChild(clone);
+    }
 
     // 위치 결정 (cell 옆 또는 아래)
     scorePicker.style.visibility = 'hidden';
@@ -1109,11 +1138,67 @@
     hideScorePicker();
   }
 
-  // 픽커 버튼 핸들러
+  // 픽커 버튼 핸들러: 클릭 + hover 미리보기
   scorePicker.querySelectorAll('button[data-val]').forEach(btn => {
     btn.addEventListener('click', () => setScoreFromPicker(parseInt(btn.dataset.val)));
+    btn.addEventListener('mouseenter', () => previewScore(parseInt(btn.dataset.val)));
+    btn.addEventListener('mouseleave', () => previewScore(null));
   });
   scorePicker.querySelector('.sp-close').addEventListener('click', hideScorePicker);
+
+  // 미리보기: 어떤 값으로 바꾸면 어떻게 되는지 — 픽커 안 mini SVG에 그림
+  function previewScore(val) {
+    if (!pickerTarget) return;
+    const previewSvg = scorePicker.querySelector('.sp-radar');
+    if (!previewSvg) return;
+    const sectionId = pickerTarget.closest('[data-page-content]')?.dataset.pageContent;
+    const info = sectionInfos.get(sectionId);
+    if (!info) return;
+
+    // pickerTarget이 어느 컬럼인지 판별
+    let cells, polyColor;
+    if (info.cjScoreCells.some(sc => sc.el === pickerTarget)) {
+      cells = info.cjScoreCells; polyColor = '#c89c4c';
+    } else if (info.comp1ScoreCells.some(sc => sc.el === pickerTarget)) {
+      cells = info.comp1ScoreCells; polyColor = '#1a3a6c';
+    } else if (info.comp2ScoreCells.some(sc => sc.el === pickerTarget)) {
+      cells = info.comp2ScoreCells; polyColor = '#8a2929';
+    } else return;
+
+    // val이 null이면 원래 상태, 숫자면 해당 값으로 시뮬레이션
+    const avgs = {};
+    for (let a = 1; a <= 6; a++) {
+      const scores = cells.filter(sc => sc.axis === a)
+        .map(sc => (sc.el === pickerTarget && val !== null) ? val : getScoreValue(sc.el))
+        .filter(v => v !== null);
+      avgs[a] = scores.length ? scores.reduce((x, y) => x + y, 0) / scores.length : 0;
+    }
+    const newCoords = coords(avgs);
+    const pointsString = pointsStr(newCoords);
+
+    // standalone (korea) 페이지: rgba 폴리곤
+    // comparison: stroke로 식별
+    let targetPoly;
+    if (info.isComparison) {
+      targetPoly = findPolyByStroke(previewSvg, polyColor);
+    } else {
+      targetPoly = findPolyByFillStart(previewSvg, 'rgba');
+    }
+    if (targetPoly) {
+      targetPoly.style.transition = 'none';
+      targetPoly.setAttribute('points', pointsString);
+    }
+
+    // 변경 인디케이터 갱신
+    const toEl = scorePicker.querySelector('.sp-to');
+    if (val !== null) {
+      toEl.textContent = val;
+      toEl.className = `sp-to score-${val}`;
+    } else {
+      toEl.textContent = '?';
+      toEl.className = 'sp-to';
+    }
+  }
 
   // 점수 셀 클릭 → 픽커
   document.addEventListener('click', (e) => {
