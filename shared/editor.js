@@ -1304,26 +1304,39 @@
     dragActive = false;
   });
 
+  function freezeEditables() {
+    document.querySelectorAll('.editable').forEach(c => {
+      c.setAttribute('data-ce-frozen', c.getAttribute('contenteditable') || 'true');
+      c.removeAttribute('contenteditable');
+    });
+  }
+  function thawEditables() {
+    document.querySelectorAll('.editable[data-ce-frozen]').forEach(c => {
+      c.setAttribute('contenteditable', c.getAttribute('data-ce-frozen'));
+      c.removeAttribute('data-ce-frozen');
+    });
+  }
+
   document.addEventListener('mousemove', (e) => {
     if (!dragStartCell || !dragInitialPos) return;
     const dx = Math.abs(e.clientX - dragInitialPos.x);
     const dy = Math.abs(e.clientY - dragInitialPos.y);
-    if (!dragActive && (dx > 4 || dy > 4)) {
-      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
-      if (overCell && overCell !== dragStartCell) {
-        // 다른 셀 진입 - 드래그 모드 ON
+    if (!dragActive && (dx > 5 || dy > 5)) {
+      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-ce-frozen], .editable');
+      const isOtherCell = overCell && overCell !== dragStartCell
+        && !overCell.classList.contains('score-cell');
+      if (isOtherCell) {
         dragActive = true;
         clearMulti();
         document.body.classList.add('cell-dragging');
-        // 시작 셀에 직접 포커스 옮겨서 브라우저 텍스트 selection 끊기
-        try { (document.activeElement && document.activeElement.blur && document.activeElement.blur()); } catch (err) {}
+        // contenteditable 전체 해제 → 브라우저 텍스트 선택 즉시 종료
+        freezeEditables();
         window.getSelection()?.removeAllRanges();
       }
     }
     if (dragActive) {
       e.preventDefault();
-      window.getSelection()?.removeAllRanges();
-      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
+      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-ce-frozen]');
       if (overCell && !overCell.classList.contains('score-cell')) {
         selectCellRange(dragStartCell, overCell);
       }
@@ -1333,6 +1346,7 @@
   document.addEventListener('mouseup', () => {
     if (dragActive) {
       document.body.classList.remove('cell-dragging');
+      thawEditables();
       window.getSelection()?.removeAllRanges();
       if (multiSelected.size > 0) {
         currentEditable = dragStartCell;
@@ -1344,7 +1358,6 @@
     dragActive = false;
   });
 
-  // 드래그 중 selectstart 차단 (브라우저 텍스트 선택 막기)
   document.addEventListener('selectstart', (e) => {
     if (dragActive) e.preventDefault();
   });
