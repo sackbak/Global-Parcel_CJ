@@ -776,11 +776,29 @@
     } else {
       rect = currentEditable.getBoundingClientRect();
     }
-    const top = rect.top + window.scrollY - toolbar.offsetHeight - 8;
-    let left = rect.left + window.scrollX + rect.width / 2 - toolbar.offsetWidth / 2;
-    // 화면 밖으로 안 나가게
-    left = Math.max(8, Math.min(left, window.innerWidth - toolbar.offsetWidth - 8));
-    toolbar.style.top = (top < window.scrollY + 64 ? rect.bottom + window.scrollY + 8 : top) + 'px';
+    // position: fixed - viewport 기준 좌표 사용
+    const tbW = toolbar.offsetWidth;
+    const tbH = toolbar.offsetHeight;
+    const navHeight = 56;
+    const viewportH = window.innerHeight;
+
+    // 기본: 셀 위에 띄우기
+    let top = rect.top - tbH - 8;
+    // 위쪽 공간 부족하면 셀 아래에
+    if (top < navHeight + 4) {
+      top = rect.bottom + 8;
+    }
+    // 아래쪽도 벗어나면 화면 하단 고정
+    if (top + tbH > viewportH - 4) {
+      top = viewportH - tbH - 8;
+    }
+    // 최후 클램프
+    top = Math.max(navHeight + 4, Math.min(top, viewportH - tbH - 4));
+
+    let left = rect.left + rect.width / 2 - tbW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8));
+
+    toolbar.style.top = top + 'px';
     toolbar.style.left = left + 'px';
     updateSizeLabel();
   }
@@ -992,6 +1010,246 @@
 
     return body.innerHTML;
   }
+
+  // ---------- 점수 픽커 (1~5 큰 버튼 모달) ----------
+  const SCORE_LABELS = {
+    1: '없음·매우 약함',
+    2: '부분·약함',
+    3: '보유·평균',
+    4: '강점·1위',
+    5: '압도적·차별화'
+  };
+  const scorePicker = document.createElement('div');
+  scorePicker.id = 'score-picker';
+  scorePicker.innerHTML =
+    '<div class="sp-header">' +
+      '<div><div class="sp-title"></div><div class="sp-sub"></div></div>' +
+      '<button type="button" class="sp-close" title="닫기 (Esc)">×</button>' +
+    '</div>' +
+    '<div class="sp-options">' +
+      [1, 2, 3, 4, 5].map(n =>
+        `<button type="button" data-val="${n}"><div class="sp-num">${n}</div><div class="sp-label">${SCORE_LABELS[n]}</div></button>`
+      ).join('') +
+    '</div>' +
+    '<div class="sp-foot">키보드 1~5 / Esc 닫기</div>';
+  document.body.appendChild(scorePicker);
+
+  let pickerTarget = null;
+
+  function showScorePicker(cell) {
+    pickerTarget = cell;
+    const current = getScoreValue(cell);
+    // 헤더
+    const row = cell.closest('tr');
+    const indName = row?.querySelector('.indicator-name')?.textContent?.trim() || '';
+    const axisName = row?.querySelector('.axis-cell')?.textContent?.trim()
+      || (cell.closest('tbody')?.querySelector('tr .axis-cell')?.textContent?.trim() || '');
+    // 어느 컬럼인지 (CJ인지 경쟁사인지)
+    let owner = '';
+    if (cell.classList.contains('cj')) owner = 'CJ대한통운';
+    else {
+      const allScores = Array.from(row?.querySelectorAll('.score-cell') || []);
+      const idx = allScores.indexOf(cell);
+      if (idx > 0) {
+        const header = cell.closest('table')?.querySelectorAll('thead th.player')[idx - 1]?.textContent?.trim() || '경쟁사';
+        owner = header.replace(/\s+/g, ' ');
+      }
+    }
+    scorePicker.querySelector('.sp-title').textContent = `${indName} ・ ${owner}`;
+    scorePicker.querySelector('.sp-sub').textContent = axisName.replace(/\s+/g, ' ');
+
+    // 현재 점수 하이라이트
+    scorePicker.querySelectorAll('button[data-val]').forEach(b => {
+      b.classList.toggle('current', parseInt(b.dataset.val) === current);
+    });
+
+    // 위치 결정 (cell 옆 또는 아래)
+    scorePicker.style.visibility = 'hidden';
+    scorePicker.style.display = 'block';
+    const pw = scorePicker.offsetWidth;
+    const ph = scorePicker.offsetHeight;
+    const rect = cell.getBoundingClientRect();
+    let top = rect.top;
+    let left = rect.right + 12;
+    if (left + pw > window.innerWidth - 16) {
+      left = rect.left - pw - 12;
+      if (left < 16) {
+        left = Math.max(16, rect.left);
+        top = rect.bottom + 8;
+      }
+    }
+    if (top + ph > window.innerHeight - 16) {
+      top = Math.max(72, window.innerHeight - ph - 16);
+    }
+    scorePicker.style.top = top + 'px';
+    scorePicker.style.left = left + 'px';
+    scorePicker.style.visibility = 'visible';
+
+    // 해당 축 하이라이트 (육각형)
+    highlightHexagonAxis(cell);
+  }
+
+  function hideScorePicker() {
+    scorePicker.style.display = 'none';
+    pickerTarget = null;
+    clearHexagonHighlight();
+  }
+
+  function setScoreFromPicker(val) {
+    if (!pickerTarget) return;
+    pickerTarget.textContent = String(val);
+    validateAndRenderScore(pickerTarget);
+    recalcAllHexagons();
+    const id = pickerTarget.getAttribute('data-cell-id');
+    const scope = pickerTarget.getAttribute('data-cell-scope');
+    const list = cellMap.get(id);
+    const sectionId = list?.[0]?.sectionId;
+    propagate(id, String(val), pickerTarget);
+    saveOne(scope, id, String(val), sectionId);
+    hideScorePicker();
+  }
+
+  // 픽커 버튼 핸들러
+  scorePicker.querySelectorAll('button[data-val]').forEach(btn => {
+    btn.addEventListener('click', () => setScoreFromPicker(parseInt(btn.dataset.val)));
+  });
+  scorePicker.querySelector('.sp-close').addEventListener('click', hideScorePicker);
+
+  // 점수 셀 클릭 → 픽커
+  document.addEventListener('click', (e) => {
+    const cell = e.target.closest && e.target.closest('.score-cell.editable');
+    if (!cell) return;
+    e.preventDefault();
+    showScorePicker(cell);
+  });
+
+  // 외부 클릭 / Esc / 숫자 키
+  document.addEventListener('mousedown', (e) => {
+    if (scorePicker.style.display !== 'block') return;
+    if (scorePicker.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('.score-cell')) return;
+    hideScorePicker();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (scorePicker.style.display !== 'block') return;
+    if (e.key === 'Escape') { e.preventDefault(); hideScorePicker(); return; }
+    if (e.key >= '1' && e.key <= '5') {
+      e.preventDefault();
+      setScoreFromPicker(parseInt(e.key));
+    }
+  }, true);
+
+  // 육각형 축 하이라이트
+  function highlightHexagonAxis(cell) {
+    const sectionId = cell.closest('[data-page-content]')?.dataset.pageContent;
+    if (!sectionId) return;
+    const info = sectionInfos.get(sectionId);
+    if (!info) return;
+    const row = cell.closest('tr');
+    if (!row) return;
+    // 어느 축에 속하는지 (axis number)
+    const allRows = Array.from(row.parentElement.children);
+    let axisNum = 0;
+    for (let i = 0; i <= allRows.indexOf(row); i++) {
+      if (allRows[i].querySelector('.axis-cell')) axisNum++;
+    }
+    const svg = info.section.querySelector('.radar-svg');
+    if (!svg) return;
+    const lines = svg.querySelectorAll('line');
+    lines.forEach((line, i) => {
+      if (i === axisNum - 1) {
+        line.setAttribute('stroke', '#c89c4c');
+        line.setAttribute('stroke-width', '2');
+      }
+    });
+  }
+  function clearHexagonHighlight() {
+    document.querySelectorAll('.radar-svg line').forEach(line => {
+      line.setAttribute('stroke', '#bbb');
+      line.setAttribute('stroke-width', '0.5');
+    });
+  }
+
+  // ---------- 육각형 부드러운 모핑 ----------
+  const prevPolygonPoints = new WeakMap();
+
+  function animatePolygon(poly, newPointsStr, duration = 400) {
+    const oldStr = prevPolygonPoints.get(poly) || poly.getAttribute('points') || '';
+    const oldPts = parsePoints(oldStr);
+    const newPts = parsePoints(newPointsStr);
+    if (oldPts.length !== newPts.length) {
+      poly.setAttribute('points', newPointsStr);
+      prevPolygonPoints.set(poly, newPointsStr);
+      return;
+    }
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const interp = oldPts.map((p, i) => [
+        p[0] + (newPts[i][0] - p[0]) * eased,
+        p[1] + (newPts[i][1] - p[1]) * eased
+      ]);
+      poly.setAttribute('points', interp.map(p => p.join(',')).join(' '));
+      if (t < 1) requestAnimationFrame(frame);
+      else prevPolygonPoints.set(poly, newPointsStr);
+    }
+    requestAnimationFrame(frame);
+  }
+  function parsePoints(str) {
+    return str.trim().split(/\s+/).map(p => p.split(',').map(Number));
+  }
+
+  // 기존 setAttribute 호출을 animatePolygon으로 교체 - recalcOne 안에서
+  const originalRecalcOne = recalcOne;
+  recalcOne = function(info) {
+    const svg = info.section.querySelector('.radar-svg');
+    if (!svg) { originalRecalcOne(info); return; }
+    if (info.isComparison) {
+      const cjC = coords(axisAverages(info.cjScoreCells));
+      const c1C = coords(axisAverages(info.comp1ScoreCells));
+      const c2C = coords(axisAverages(info.comp2ScoreCells));
+      const cjP = findPolyByStroke(svg, '#c89c4c');
+      const c1P = findPolyByStroke(svg, '#1a3a6c');
+      const c2P = findPolyByStroke(svg, '#8a2929');
+      if (cjP) animatePolygon(cjP, pointsStr(cjC));
+      if (c1P) animatePolygon(c1P, pointsStr(c1C));
+      if (c2P) animatePolygon(c2P, pointsStr(c2C));
+
+      const sectionId = info.section.dataset.pageContent;
+      const ovCard = document.querySelector(`.overview-card[data-overview-for="${sectionId}"]`);
+      if (ovCard) {
+        const ovCj = ovCard.querySelector('.ov-poly-cj');
+        const ovC1 = ovCard.querySelector('.ov-poly-c1');
+        const ovC2 = ovCard.querySelector('.ov-poly-c2');
+        if (ovCj) animatePolygon(ovCj, pointsStr(cjC));
+        if (ovC1) animatePolygon(ovC1, pointsStr(c1C));
+        if (ovC2) animatePolygon(ovC2, pointsStr(c2C));
+      }
+    } else {
+      const avgs = axisAverages(info.cjScoreCells);
+      const c = coords(avgs);
+      const dataPoly = findPolyByFillStart(svg, 'rgba');
+      if (dataPoly) animatePolygon(dataPoly, pointsStr(c));
+      const circles = Array.from(svg.querySelectorAll('circle')).filter(x => x.getAttribute('r') === '2.5');
+      circles.forEach((cir, i) => {
+        if (c[i]) {
+          cir.style.transition = 'cx 0.4s ease-out, cy 0.4s ease-out';
+          cir.setAttribute('cx', c[i][0]);
+          cir.setAttribute('cy', c[i][1]);
+        }
+      });
+      const texts = svg.querySelectorAll('text');
+      for (let a = 0; a < 6; a++) {
+        const vt = texts[a*2+1];
+        if (vt) vt.textContent = avgs[a+1].toFixed(1);
+      }
+      const all = info.cjScoreCells.map(x => getScoreValue(x.el)).filter(v => v !== null);
+      const overall = all.length ? (all.reduce((a,b)=>a+b,0)/all.length).toFixed(2) : '0.00';
+      const legend = info.section.querySelector('.radar-legend');
+      if (legend) legend.textContent = `전체 평균 ${overall} / 5.0 ・ 점수는 회의 합의 후 조정 가능`;
+    }
+  };
 
   // ---------- 시작 ----------
   init();

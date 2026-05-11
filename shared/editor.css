@@ -160,6 +160,105 @@ body { padding: 0 12px 24px !important; }
   text-align: center;
 }
 
+/* 점수 픽커 (1~5 모달) */
+#score-picker {
+  position: fixed;
+  display: none;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  padding: 14px;
+  z-index: 10000;
+  min-width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  animation: spFadeIn 0.18s ease-out;
+}
+@keyframes spFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+#score-picker .sp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+#score-picker .sp-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a3a6c;
+  line-height: 1.3;
+}
+#score-picker .sp-sub {
+  font-size: 10.5px;
+  color: #888;
+  margin-top: 3px;
+}
+#score-picker .sp-close {
+  background: transparent;
+  border: 0;
+  color: #999;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#score-picker .sp-close:hover { color: #333; }
+#score-picker .sp-options {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+#score-picker .sp-options button {
+  background: #f8f8f5;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 12px 4px 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.1s, background 0.12s, border-color 0.12s;
+  font-family: inherit;
+}
+#score-picker .sp-options button:hover {
+  background: #fff3d6;
+  border-color: #c89c4c;
+  transform: translateY(-2px);
+}
+#score-picker .sp-options button.current {
+  background: #1a3a6c;
+  border-color: #1a3a6c;
+}
+#score-picker .sp-options button.current .sp-num,
+#score-picker .sp-options button.current .sp-label {
+  color: #fff !important;
+}
+#score-picker .sp-num {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+#score-picker .sp-options button[data-val="1"] .sp-num { color: #8a2929; }
+#score-picker .sp-options button[data-val="2"] .sp-num { color: #a37a00; }
+#score-picker .sp-options button[data-val="3"] .sp-num { color: #555; }
+#score-picker .sp-options button[data-val="4"] .sp-num { color: #3b6d3b; }
+#score-picker .sp-options button[data-val="5"] .sp-num { color: #2d5a2d; }
+#score-picker .sp-label {
+  font-size: 9.5px;
+  color: #666;
+  line-height: 1.2;
+}
+#score-picker .sp-foot {
+  margin-top: 8px;
+  font-size: 9.5px;
+  color: #aaa;
+  text-align: right;
+}
+
 @media print {
   .editable:hover,
   .editable:focus {
@@ -167,7 +266,10 @@ body { padding: 0 12px 24px !important; }
     box-shadow: none !important;
   }
   #save-indicator,
-  #format-toolbar {
+  #format-toolbar,
+  #score-picker,
+  #export-btn,
+  #copy-btn {
     display: none !important;
   }
 }
