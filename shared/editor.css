@@ -61,6 +61,18 @@ body { padding: 0 12px 24px !important; }
   background: rgba(26, 58, 108, 0.12) !important;
 }
 
+/* 드래그 중: 텍스트 선택 차단 + cursor 변경 */
+body.cell-dragging,
+body.cell-dragging * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: crosshair !important;
+}
+body.cell-dragging .editable,
+body.cell-dragging .editable * {
+  -webkit-user-modify: read-only !important;
+}
+
 /* 우상단 버튼들 */
 #export-btn, #copy-btn {
   position: fixed;

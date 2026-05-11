@@ -467,47 +467,76 @@
       }
     }
 
-    // 3) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
-      const k = e.key.toLowerCase();
-      if (k === 'b' || k === 'i' || k === 'u') {
+    // 3) 서식 단축키 - Ctrl 조합
+    if (e.ctrlKey || e.metaKey) {
+      // Ctrl+Shift+> / Ctrl+Shift+. : 크기 ↑ (Word/Docs 스타일)
+      if (e.shiftKey && (e.key === '>' || e.key === '.')) {
         e.preventDefault();
-        document.execCommand('styleWithCSS', false, true);
-        document.execCommand(k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline');
-        triggerSaveFromToolbar();
+        runFontSizeAdjust(1);
         return;
       }
-      // 정렬 단축키: Ctrl+L / Ctrl+E / Ctrl+R
-      if (k === 'l') {
+      // Ctrl+Shift+< / Ctrl+Shift+, : 크기 ↓
+      if (e.shiftKey && (e.key === '<' || e.key === ',')) {
         e.preventDefault();
-        document.execCommand('justifyLeft');
-        triggerSaveFromToolbar();
+        runFontSizeAdjust(-1);
         return;
       }
-      if (k === 'e') {
-        e.preventDefault();
-        document.execCommand('justifyCenter');
-        triggerSaveFromToolbar();
+      // 그 외 Ctrl 단축키 (Shift 없음)
+      if (!e.shiftKey && !e.altKey) {
+        const k = e.key.toLowerCase();
+        if (k === 'b' || k === 'i' || k === 'u') {
+          e.preventDefault();
+          const cmd = k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline';
+          if (!applyCmdToMulti(cmd, null)) {
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand(cmd);
+            triggerSaveFromToolbar();
+          }
+          return;
+        }
+        if (k === 'l') { e.preventDefault(); if (!applyCmdToMulti('justifyLeft', null)) { document.execCommand('justifyLeft'); triggerSaveFromToolbar(); } return; }
+        if (k === 'e') { e.preventDefault(); if (!applyCmdToMulti('justifyCenter', null)) { document.execCommand('justifyCenter'); triggerSaveFromToolbar(); } return; }
+        // 크기 단축키: Ctrl++ / Ctrl+= / Ctrl+-
+        if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          runFontSizeAdjust(1);
+          return;
+        }
+        if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          runFontSizeAdjust(-1);
+          return;
+        }
+      }
+    }
+
+    function runFontSizeAdjust(delta) {
+      // 다중 셀 우선
+      if (multiSelected.size > 0) {
+        multiSelected.forEach(cell => {
+          const cur = parseFloat(window.getComputedStyle(cell).fontSize);
+          const next = nextSize(cur, delta);
+          cell.focus();
+          const range = document.createRange();
+          range.selectNodeContents(cell);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          const span = document.createElement('span');
+          span.style.fontSize = next + 'px';
+          try { span.appendChild(range.extractContents()); range.insertNode(span); } catch (e) {}
+          const id = cell.getAttribute('data-cell-id');
+          const scope = cell.getAttribute('data-cell-scope');
+          const list = cellMap.get(id);
+          const sectionId = list?.[0]?.sectionId;
+          saveOne(scope, id, cell.innerHTML, sectionId);
+          propagate(id, cell.innerHTML, cell);
+        });
         return;
       }
-      if (k === 'r') {
-        // Ctrl+R은 새로고침이라 정렬 단축키로 잡지 않음
-      }
-      // 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
-      if (e.key === '+' || e.key === '=' ) {
-        e.preventDefault();
-        adjustFontSize(1);
-        triggerSaveFromToolbar();
-        updateSizeLabel();
-        return;
-      }
-      if (e.key === '-' || e.key === '_') {
-        e.preventDefault();
-        adjustFontSize(-1);
-        triggerSaveFromToolbar();
-        updateSizeLabel();
-        return;
-      }
+      adjustFontSize(delta);
+      triggerSaveFromToolbar();
+      updateSizeLabel();
     }
 
     // 4) Tab / Shift+Tab — 활성 탭의 다음/이전 셀로 이동 (엑셀스러움)
@@ -1205,11 +1234,8 @@
       }
       return;
     }
-    // 점수 셀은 픽커가 처리 - 멀티셀렉트 스킵
-    if (cell.classList.contains('score-cell')) {
-      clearMulti();
-      return;
-    }
+    if (cell.classList.contains('score-cell')) { clearMulti(); return; }
+
     if (e.shiftKey && lastClickedCell) {
       e.preventDefault();
       selectCellRange(lastClickedCell, cell);
@@ -1222,9 +1248,7 @@
       if (multiSelected.has(cell)) {
         cell.classList.remove('multi-selected');
         multiSelected.delete(cell);
-      } else {
-        addToMulti(cell);
-      }
+      } else addToMulti(cell);
       currentEditable = cell;
       positionToolbar();
       return;
@@ -1239,17 +1263,21 @@
     if (!dragStartCell || !dragInitialPos) return;
     const dx = Math.abs(e.clientX - dragInitialPos.x);
     const dy = Math.abs(e.clientY - dragInitialPos.y);
-    if (!dragActive && (dx > 8 || dy > 8)) {
+    if (!dragActive && (dx > 4 || dy > 4)) {
       const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
       if (overCell && overCell !== dragStartCell) {
+        // 다른 셀 진입 - 드래그 모드 ON
         dragActive = true;
         clearMulti();
-        // 브라우저 텍스트 selection 해제
+        document.body.classList.add('cell-dragging');
+        // 시작 셀에 직접 포커스 옮겨서 브라우저 텍스트 selection 끊기
+        try { (document.activeElement && document.activeElement.blur && document.activeElement.blur()); } catch (err) {}
         window.getSelection()?.removeAllRanges();
-        document.body.style.userSelect = 'none';
       }
     }
     if (dragActive) {
+      e.preventDefault();
+      window.getSelection()?.removeAllRanges();
       const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
       if (overCell && !overCell.classList.contains('score-cell')) {
         selectCellRange(dragStartCell, overCell);
@@ -1259,8 +1287,8 @@
 
   document.addEventListener('mouseup', () => {
     if (dragActive) {
-      document.body.style.userSelect = '';
-      // 툴바 띄움
+      document.body.classList.remove('cell-dragging');
+      window.getSelection()?.removeAllRanges();
       if (multiSelected.size > 0) {
         currentEditable = dragStartCell;
         positionToolbar();
@@ -1269,6 +1297,11 @@
     dragStartCell = null;
     dragInitialPos = null;
     dragActive = false;
+  });
+
+  // 드래그 중 selectstart 차단 (브라우저 텍스트 선택 막기)
+  document.addEventListener('selectstart', (e) => {
+    if (dragActive) e.preventDefault();
   });
 
   // 다중 셀에 명령 적용 - 셀별 selectAll + execCommand
