@@ -1,0 +1,117 @@
+/* CJ LMD Report - Editable Cell Visuals
+   화면에서만 편집 영역 표시. 인쇄 시에는 깨끗하게 출력됨. */
+
+.editable {
+  outline: none;
+  border-radius: 2px;
+  transition: background 0.12s ease;
+}
+
+.editable:hover {
+  background: #fffae8;
+  cursor: text;
+}
+
+.editable:focus {
+  background: #fff4d2;
+  box-shadow: inset 0 0 0 1px #c89c4c;
+}
+
+/* 점수 셀 invalid 상태 */
+.score-cell.score-invalid {
+  color: #c00 !important;
+  background: #ffe2e2 !important;
+}
+
+/* 우하단 저장 표시 */
+#save-indicator {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  padding: 6px 14px;
+  background: #1a3a6c;
+  color: #fff;
+  font-size: 11px;
+  border-radius: 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic',
+    '맑은 고딕', sans-serif;
+}
+
+#save-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 서식 툴바 */
+#format-toolbar {
+  position: fixed;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 9998;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  font-size: 12px;
+  user-select: none;
+}
+#format-toolbar.visible { display: flex; }
+#format-toolbar button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  color: #333;
+  min-width: 26px;
+  transition: background 0.1s;
+}
+#format-toolbar button:hover { background: #f0f0ee; }
+#format-toolbar button:active { background: #e0e0d8; }
+#format-toolbar button[data-cmd="bold"] { font-weight: 700; }
+#format-toolbar button[data-cmd="italic"] { font-style: italic; }
+#format-toolbar button[data-cmd="underline"] { text-decoration: underline; }
+#format-toolbar .sep {
+  width: 1px;
+  height: 18px;
+  background: #ddd;
+  margin: 0 4px;
+}
+#format-toolbar input[type="color"] {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 1px;
+  cursor: pointer;
+  background: #fff;
+}
+#format-toolbar .size-label {
+  font-size: 10px;
+  color: #888;
+  padding: 0 4px;
+  min-width: 22px;
+  text-align: center;
+}
+
+@media print {
+  .editable:hover,
+  .editable:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #save-indicator,
+  #format-toolbar {
+    display: none !important;
+  }
+}

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>미국 LMD ・ CJ vs UPS · FedEx</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm 1.25cm 1.2cm 1.5cm;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: #e8e6e0;
+    color: #222;
+    padding: 16px;
+    line-height: 1.4;
+  }
+  
+  .page {
+    background: white;
+    padding: 1.5cm 1.25cm 1.2cm 1.5cm;
+    margin: 0 auto 20px;
+    width: 21cm;
+    min-height: 29.7cm;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    position: relative;
+    font-size: 8.5px;
+    color: #222;
+  }
+  
+  .page-num {
+    position: absolute;
+    top: 0.4cm;
+    right: 0.5cm;
+    font-size: 9px;
+    color: #999;
+  }
+  
+  .header-band {
+    border-bottom: 3px double #1a3a6c;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .brand {
+    font-size: 9px;
+    color: #1a3a6c;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 3px;
+  }
+  .title {
+    font-size: 13px;
+    color: #1a3a6c;
+    font-weight: 600;
+  }
+  .date {
+    font-size: 9px;
+    color: #666;
+    text-align: right;
+  }
+  
+  .section-label {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+  
+  .market-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .stat-card {
+    border-left: 2px solid #c89c4c;
+    padding: 3px 7px;
+  }
+  .stat-card .label {
+    font-size: 7px;
+    color: #666;
+  }
+  .stat-card .value {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #222;
+  }
+  
+  .insight-box {
+    background: #fafaf5;
+    border-left: 3px solid #c89c4c;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    font-size: 8.5px;
+    line-height: 1.55;
+  }
+  .insight-box.summary {
+    border-left-color: #1a3a6c;
+  }
+  .insight-box .label {
+    font-weight: 600;
+    color: #1a3a6c;
+    margin-bottom: 2px;
+    font-size: 9px;
+  }
+  
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7px;
+    margin-bottom: 6px;
+  }
+  .comp-table th {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 3px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    vertical-align: middle;
+  }
+  .comp-table th.left { text-align: left; }
+  .comp-table th.cj-col {
+    background: #c89c4c;
+    color: #1a1a1a;
+    border-left: 2px solid #fff;
+  }
+  .comp-table th.player {
+    background: #284f8a;
+    border-left: 1px solid #fff;
+  }
+  .comp-table th.score-col {
+    background: #1a3a6c;
+    font-size: 7px;
+    border-left: 1px solid #fff;
+  }
+  .comp-table td {
+    padding: 2.5px 4px;
+    border-top: 0.5px solid #ddd;
+    line-height: 1.35;
+    vertical-align: middle;
+    text-align: center;
+  }
+  .comp-table td.left { text-align: left; }
+  .comp-table td.axis-cell {
+    border-top: 1px solid #1a3a6c;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 7.5px;
+  }
+  .axis-bg-a { background: #eef1f7; }
+  .axis-bg-b { background: #f3eff1; }
+  
+  .indicator-name {
+    font-weight: 600;
+    color: #222;
+    display: block;
+    font-size: 7.5px;
+  }
+  .indicator-sub {
+    color: #666;
+    font-size: 6.5px;
+    display: block;
+    margin-top: 1px;
+  }
+  
+  .cj-cell { background: #fffaf0; }
+  .estimate { color: #b8860b; font-size: 6.5px; font-style: italic; }
+  
+  .score-cell {
+    font-weight: 700;
+    font-size: 10px;
+    background: #f4f4ee;
+    text-align: center;
+    width: 3.5%;
+  }
+  .score-cell.cj { background: #fff3d6; }
+  .score-5 { color: #2d5a2d; }
+  .score-4 { color: #3b6d3b; }
+  .score-3 { color: #555; }
+  .score-2 { color: #a37a00; }
+  .score-1 { color: #8a2929; }
+  
+  .scale-legend {
+    display: flex;
+    gap: 8px;
+    background: #f4f4ee;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    font-size: 7.5px;
+  }
+  .scale-legend .item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .scale-legend .num {
+    font-weight: 700;
+    font-size: 9px;
+    width: 12px;
+    text-align: center;
+  }
+  
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 6.8cm 1fr;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  .radar-box {
+    border: 1px solid #ddd;
+    padding: 6px;
+    background: #fafaf8;
+  }
+  .radar-title {
+    font-size: 9px;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: center;
+    margin-bottom: 3px;
+    border-bottom: 1px solid #1a3a6c;
+    padding-bottom: 2px;
+  }
+  .radar-svg {
+    display: block;
+    margin: 0 auto;
+  }
+  .radar-legend-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    font-size: 7px;
+    margin-top: 3px;
+  }
+  .radar-legend-row .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 2px;
+    vertical-align: middle;
+  }
+  .legend-cj { background: #c89c4c; }
+  .legend-p1 { background: #1a3a6c; }
+  .legend-p2 { background: #8a2929; }
+  
+  .source-note {
+    font-size: 6.5px;
+    color: #999;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-num">PAGE 4 / 9 ・ 미국</div>
+  
+  <div class="header-band">
+    <div class="brand">CJ LOGISTICS GLOBAL LMD STRATEGY REPORT</div>
+    <div class="header-meta">
+      <div class="title">미국 ・ CJ대한통운 vs UPS(1위) · FedEx(2위)</div>
+      <div class="date">성장추진담당 ・ 2026.05.08</div>
+    </div>
+  </div>
+
+  <div class="section-label">시장 스냅샷</div>
+  
+  <div class="market-stats">
+    <div class="stat-card">
+      <div class="label">미국 Parcel 시장 (2024)</div>
+      <div class="value">약 $200B+</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">CAGR (2025-30)</div>
+      <div class="value">약 4~5%</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">연 박스량 (2024)</div>
+      <div class="value">약 220억+ 개</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">UPS+FedEx+USPS+Amazon 점유</div>
+      <div class="value">약 90%+</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="label">미국 LMD 시장 핵심</div>
+    글로벌 최대 LMD 시장 · 4강 과점 구조: UPS(약 22%, 220개국) · FedEx(약 19%, 220개국) · USPS(국영) · Amazon Logistics(2024 추월) · 단가 높음(평균 약 $11~12/박스) + 연료 할증료(Fuel Surcharge) 활성화 + 거대 국토 · UPS·FedEx는 항공·해상·트럭·철도 모든 운송 수단 보유한 진정한 종합물류 거인 · 외국계 진입 사실상 불가능, M&A·니치만 가능 · CJ는 미국 DSC Logistics(2018 약 8억$) 인수로 CL 영역만 진출, 라스트마일은 미진출
+  </div>
+
+  <div class="scale-legend">
+    <div class="item"><span class="num score-5">5</span>압도적 강점·차별화</div>
+    <div class="item"><span class="num score-4">4</span>강점·한국 1위</div>
+    <div class="item"><span class="num score-3">3</span>보유·평균</div>
+    <div class="item"><span class="num score-2">2</span>부분·약함</div>
+    <div class="item"><span class="num score-1">1</span>없음·매우 약함</div>
+  </div>
+
+  <div class="section-label">21개 역량 지표 비교 ・ CJ대한통운 vs UPS · FedEx</div>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th class="left" style="width: 10%;">축</th>
+        <th class="left" style="width: 14%;">세부 지표</th>
+        <th class="cj-col" style="width: 23%;">CJ대한통운 (한국)</th>
+        <th class="score-col">점수</th>
+        <th class="player" style="width: 23%;">UPS (1위, 美 22%)</th>
+        <th class="score-col">점수</th>
+        <th class="player" style="width: 23%;">FedEx (2위, 美 19%)</th>
+        <th class="score-col">점수</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- 1. 인프라 규모·자산 (4개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="4" class="axis-cell axis-bg-a">1. 인프라<br/>규모·자산</td>
+        <td class="left"><span class="indicator-name">거점 인프라</span><span class="indicator-sub">허브 + SUB + 면적당 밀도</span></td>
+        <td class="cj-cell left">분류 허브 약 280개 + 전국 SUB / 좁은 국토 거점 밀집</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">미국 1,800+ 거점 / Worldport(루이빌, 세계 최대 자동분류 허브) / 220개국 글로벌 네트워크</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">미국 5,000+ 거점 / Memphis World Hub / 220개국 / Ground·Express·Freight 통합 네트워크</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">특화·전략 허브</span><span class="indicator-sub">메가허브 · 물성별 라인</span></td>
+        <td class="cj-cell left">곤지암 메가허브(아시아급) + MP 물성별 라인</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Worldport(루이빌) - 시간당 41만 박스 처리, 세계 최대 단일 자동분류 허브 / 글로벌 메가허브 다수</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">Memphis World Hub(35K+ 직원) + 4개 미국 광역 허브 + Indianapolis·Oakland 등</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">차량·기사 수</span><span class="indicator-sub">집화·배송 차량 + 기사</span></td>
+        <td class="cj-cell left">기사 약 2만+ / 차량 다수</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">차량 12.4만대 + 항공기 약 290대 + 직원 약 49만명 (글로벌)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">차량 약 8.2만대 + 항공기 698대(세계 최대 화물 항공) + 직원 약 50만명 (글로벌)</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">다양한 운송 수단</span><span class="indicator-sub">트럭 + 철도 + 항공 + 해운</span></td>
+        <td class="cj-cell left">100% 트럭 (좁은 국토)</td>
+        <td class="score-cell cj score-2">2</td>
+        <td class="left">트럭 + 철도(인터모달) + 항공(290대) + 해운(포워딩) 모두 보유</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">트럭 + 철도(인터모달) + 항공(698대, 세계 1위 화물항공) + 해운 모두 보유</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+
+      <!-- 2. 자동화·기술 시스템 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">2. 자동화·<br/>기술 시스템</td>
+        <td class="left"><span class="indicator-name">분류 자동화 설비</span><span class="indicator-sub">AGV · AMR · 휠소터</span></td>
+        <td class="cj-cell left">군포 AGV·AMR·휠소터 다수</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Worldport 자동분류(시간당 41만 박스) + ORION AI 라우팅 + 휠소터·Cross-belt 글로벌 표준</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">Memphis 자동분류 + 로봇 트럭로딩(Reflex) + Surround 시각인식 시스템 + DRIVE 자동화 프로그램</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">운영 IT 시스템</span><span class="indicator-sub">AI 라우팅·디지털트윈·스캔</span></td>
+        <td class="cj-cell left">AI 라우팅·디지털트윈·ITS 10+단계 스캔</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">ORION(AI 라우팅, 연 $30B 절감) + Network Planning Tools + 실시간 추적</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">FedEx Dataworks(DRIVE) + AI 라우팅 + SenseAware(IoT 추적) + ground·air 통합 디지털</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">풀필먼트 자동화</span><span class="indicator-sub">e커머스 풀필먼트 자동화</span></td>
+        <td class="cj-cell left">군포·인천·미국 풀필먼트 신축</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">UPS Supply Chain Solutions + e-Fulfillment + Healthcare 풀필먼트 전문</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">FedEx Fulfillment + ShopRunner 인수 + 전자상거래 솔루션 통합</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 3. 시장 입지·재무 (5개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="5" class="axis-cell axis-bg-a">3. 시장 입지·<br/>재무</td>
+        <td class="left"><span class="indicator-name">LMD 매출 (2024)</span><span class="indicator-sub">택배·LMD 세그먼트만</span></td>
+        <td class="cj-cell left">O-NE 3.73조원 (약 27억$)</td>
+        <td class="score-cell cj score-2">2</td>
+        <td class="left">美 도메스틱 패키지 2024 약 $61B(약 87조원) / 전사 $91.1B / 글로벌 LMD 절대 규모 1위</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">FedEx Ground+Express 美 도메스틱 약 $55B(약 78조원) / 전사 $87.7B</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">LMD 영업이익률</span><span class="indicator-sub">LMD 부문 영익률</span></td>
+        <td class="cj-cell left">약 6.4% (2,388억원)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">美 도메스틱 2024 9.7%(GAAP) / 비GAAP 10.1%</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Ground 10.8~11.4% / Express 1.9~2.3% / 통합 약 6~9%</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">시장 점유율</span><span class="indicator-sub">자국 내 LMD 점유</span></td>
+        <td class="cj-cell left">한국 33.6% (1위)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">미국 약 22% (1위) / 한국과 점유율은 유사하나 절대 시장 크기 압도</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">미국 약 19% (2위)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">박스당 단가</span><span class="indicator-sub">GDP·임금 대비</span></td>
+        <td class="cj-cell left">약 2,500원 / GDP 대비 낮음</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">평균 $11~12/박스(약 1.5~1.6만원, 한국 6배) + 연료 할증료 + Residential Surcharge 등 다수</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">평균 $10~11/박스(약 1.3~1.5만원) + 다양한 할증료 시스템</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">3년 평균 Capex</span><span class="indicator-sub">2022~2024 자본적 지출</span></td>
+        <td class="cj-cell left"><span class="estimate">추정</span> 연 2,500~3,500억원</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">2024 약 $4.0B(약 5.7조원) / 2023 $5.2B / 2022 $4.8B / 연 평균 약 $4.7B</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">2024 약 $5.2B(약 7.4조원) / 2023 $6.2B / 2022 $6.8B / 연 평균 약 $6.1B</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+
+      <!-- 4. 운영 모델·노하우 (4개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="4" class="axis-cell axis-bg-b">4. 운영 모델·<br/>노하우</td>
+        <td class="left"><span class="indicator-name">채널 구조 (직영+대리점)</span><span class="indicator-sub">직영·집배점·인원 다층 + 노동 모델</span></td>
+        <td class="cj-cell left">본사-집배점-인원 다층 + 정규직+위탁 혼합</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">100% 직영 + 정규직(Teamsters 노조) / 안정성 높으나 인건비 부담 (시급 $40+)</td>
+        <td class="score-cell score-3">3</td>
+        <td class="left">Ground 위탁 모델(독립계약자 ISP) + Express 직영 / 한국 집배점과 유사한 분할 운영</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">컨트롤 타워</span><span class="indicator-sub">사업 담당 다단계 운영</span></td>
+        <td class="cj-cell left">사업 담당 다단계</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">100년+ 노하우, 본사-지역-디스트릭트-허브 다단계 / Tomé CEO 체제 효율화 중</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">DRIVE 프로그램으로 통합 컨트롤 강화(2024 Express+Ground 통합) / 본사 통합 시스템</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">서비스 품질</span><span class="indicator-sub">정시배송·클레임·고객센터</span></td>
+        <td class="cj-cell left">대전 고객센터 + 챗봇, 클레임 50만원 보상</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">정시 배송률 95%+ / Money Back Guarantee / 글로벌 표준</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">정시 배송률 95%+ / SenseAware 실시간 가시성 / Money Back Guarantee</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">해외 진출 경험</span><span class="indicator-sub">택배·LMD 해외 사업</span></td>
+        <td class="cj-cell left">동남아·중국 콜드체인 / 태국·말련 4년 -354억 철수 전례</td>
+        <td class="score-cell cj score-2">2</td>
+        <td class="left">220개국 운영, 100년 글로벌 LMD 노하우 (글로벌 LMD 사업자 압도)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">220개국 운영, 50년+ 글로벌 LMD 노하우 + TNT Express 인수(2016, 4.4B€)</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+
+      <!-- 5. 사업·서비스 포트폴리오 (2개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="2" class="axis-cell axis-bg-a">5. 사업·서비스<br/>포트폴리오</td>
+        <td class="left"><span class="indicator-name">사업 영역 다각화</span><span class="indicator-sub">LMD 외 보유 사업</span></td>
+        <td class="cj-cell left">5개 영역(CL·택배·Global·CBE·E&C)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">US Domestic + International + Supply Chain + Healthcare(전문) / Coyote 매각(2024)</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Express + Ground + Freight + Services + Custom Critical / 통합 진행(2024)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">배송 서비스 다양성</span><span class="indicator-sub">주7일·새벽·당일·도어·퀵</span></td>
+        <td class="cj-cell left">5종+(주7일·새벽·당일·도어·퀵커머스)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">7일 배송(2019부터) + Next Day Air + Same Day + Ground + Worldwide Express + Sunday(2020)</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">SameDay City + Overnight + 2Day + Ground Economy + Sunday(2020부터) / 7일 배송</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 6. 고객·시너지·브랜드 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">6. 고객·시너지·<br/>브랜드</td>
+        <td class="left"><span class="indicator-name">계열사 화주</span><span class="indicator-sub">캡티브 화주 확보</span></td>
+        <td class="cj-cell left">제일제당·올리브영·푸드빌·CGV 등 다수</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">없음 (독립 운영) / 대신 거대 외부 고객 기반(Amazon·Walmart·Apple 등)</td>
+        <td class="score-cell score-2">2</td>
+        <td class="left">없음 (독립 운영) / 외부 화주 기반</td>
+        <td class="score-cell score-2">2</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">외부 고객 다양성</span><span class="indicator-sub">D2C 비중 · 특정 의존 X</span></td>
+        <td class="cj-cell left">편의점·당근·네이버 등 다수, D2C 비중 高</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">SMB부터 Fortune 500까지 모든 화주 + Amazon·Walmart·USPS 등 메가 고객 (다양성 압도)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">SMB+엔터프라이즈+B2B+B2C 통합 / 다양성 高, 단 Amazon 의존도 일부 감소 추세</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">그룹 자본·파트너십·M&A</span><span class="indicator-sub">자본력 + 현지 MOU + M&A</span></td>
+        <td class="cj-cell left">CJ그룹 + CP MOU + M&A(베트남 Gemadept 2017·미 DSC 2018·인 Darcl 2017)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">NYSE 상장(시총 약 $100B), 100년 M&A 노하우 / Coyote 매각·Marken·Roadie 인수 등 다수</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">NYSE 상장(시총 약 $65B) / TNT Express 인수(2016 4.4B€) · ShopRunner 등 M&A 다수</td>
+        <td class="score-cell score-5">5</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- === 비교 육각형 + 시사점 === -->
+  <div class="bottom-grid">
+    <div class="radar-box">
+      <div class="radar-title">6축 평균 비교 (5점 만점)</div>
+      <svg class="radar-svg" width="230" height="230" viewBox="-115 -115 230 230">
+        <!-- 5단계 그리드 -->
+        <polygon points="0,-90 77.94,-45 77.94,45 0,90 -77.94,45 -77.94,-45" fill="none" stroke="#ccc" stroke-width="0.5"/>
+        <polygon points="0,-72 62.35,-36 62.35,36 0,72 -62.35,36 -62.35,-36" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-54 46.77,-27 46.77,27 0,54 -46.77,27 -46.77,-27" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-36 31.18,-18 31.18,18 0,36 -31.18,18 -31.18,-18" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-18 15.59,-9 15.59,9 0,18 -15.59,9 -15.59,-9" fill="none" stroke="#eee" stroke-width="0.5"/>
+        
+        <!-- 축 라인 -->
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="0" y2="90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        
+        <!-- CJ대한통운 (골드) 6축 평균 -->
+        <polygon points="0,-58.5 62.35,-36 53,30.6 0,58.5 -62.35,36 -62.35,-36" 
+                 fill="rgba(200,156,76,0.20)" stroke="#c89c4c" stroke-width="1.5"/>
+        
+        <!-- UPS (네이비)
+             1.인프라 (5+5+5+5)/4=5.0 / 2.자동화 (5+5+4)/3=4.67 / 3.시장재무 (5+4+4+5+5)/5=4.6 / 4.운영 (3+5+4+5)/4=4.25 / 5.사업 (4+4)/2=4.0 / 6.고객 (2+5+5)/3=4.0
+             좌표:
+             1: 0, -90
+             2: 72.79, -42
+             3: 71.74, 41.4
+             4: 0, 76.5
+             5: -62.35, 36
+             6: -62.35, -36 -->
+        <polygon points="0,-90 72.79,-42 71.74,41.4 0,76.5 -62.35,36 -62.35,-36" 
+                 fill="rgba(26,58,108,0.20)" stroke="#1a3a6c" stroke-width="1.5"/>
+        
+        <!-- FedEx (다크 레드)
+             1.인프라 (5+5+5+5)/4=5.0 / 2.자동화 (5+5+4)/3=4.67 / 3.시장재무 (5+4+4+5+5)/5=4.6 / 4.운영 (4+4+4+5)/4=4.25 / 5.사업 (4+4)/2=4.0 / 6.고객 (2+5+5)/3=4.0
+             동일 (UPS와 거의 같음)
+             좌표 동일 -->
+        <polygon points="0,-90 72.79,-42 71.74,41.4 0,76.5 -62.35,36 -62.35,-36" 
+                 fill="rgba(138,41,41,0.18)" stroke="#8a2929" stroke-width="1.5" stroke-dasharray="3,2"/>
+        
+        <!-- 라벨 -->
+        <text x="0" y="-100" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">1.인프라</text>
+        <text x="94" y="-43" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">2.자동화</text>
+        <text x="94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">3.시장재무</text>
+        <text x="0" y="103" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">4.운영모델</text>
+        <text x="-94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">5.사업서비스</text>
+        <text x="-94" y="-43" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">6.고객시너지</text>
+        
+        <circle cx="0" cy="0" r="1" fill="#666"/>
+      </svg>
+      <div class="radar-legend-row">
+        <span><span class="dot legend-cj"></span>CJ 3.67</span>
+        <span><span class="dot legend-p1"></span>UPS 4.42</span>
+        <span><span class="dot legend-p2"></span>FedEx 4.42</span>
+      </div>
+    </div>
+
+    <div class="insight-box summary" style="margin-bottom: 0;">
+      <div class="label">미국 역량 비교 시사점</div>
+      <strong>CJ 열위 영역 (대부분):</strong> UPS·FedEx 모두 100년+ 글로벌 LMD 거인. 인프라(미국 1.8K~5K 거점 + 220개국)·차량/항공기 수(8~12만대 + 항공 290~698대)·다중운송(항공·철도·해운 모두)·자동화·시장규모·자본력 모두 압도. 박스당 단가도 한국 6배($11~12). 미국 LMD 직진출은 불가능.<br/><br/>
+      <strong>CJ 상대적 강점:</strong> 계열사 캡티브 화주(CJ제일제당·올리브영) — UPS·FedEx는 캡티브 X. 단 외부 고객 다양성에서는 미국 사업자 압도(Amazon·Walmart 등).<br/><br/>
+      <strong>진입 모델:</strong> 라스트마일 X (불가능) → ① <strong>CL·풀필먼트 강화</strong> (CJ DSC Logistics 2018 8억$ 인수 기반 확장) ② <strong>K-Food·뷰티 CBE</strong> (한국 화주 동행 Cross-border) ③ <strong>한국→미국 역직구 솔루션</strong> (CJ 글로벌 풀필먼트 + UPS·FedEx 라스트마일 파트너십) ④ M&A 추가 검토 (DSC 패턴, 니치 3PL 인수).
+    </div>
+  </div>
+
+  <div class="source-note">
+    출처: UPS Investors 2024 4Q Earnings(2025.01.30) · UPS 2024 10-K · FedEx FY2024 10-K(SEC) · FedEx FY24 8-K · Statista UPS·FedEx 2024 매출 · ElectroIQ FedEx Statistics 2024(차량·항공기) · Investment Literacy Coach FedEx Deep Dive 2026 · UPS Worldport 자료 · FedEx Memphis World Hub 자료 ・ <span class="estimate">추정</span>: 박스당 단가는 산업 평균 기준 환산
+  </div>
+
+</div>
+
+</body>
+</html>

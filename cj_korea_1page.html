@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>CJ대한통운 ・ 자체 역량 프로파일 (21개 지표)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm 1.25cm 1.2cm 1.5cm;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: #e8e6e0;
+    color: #222;
+    padding: 16px;
+    line-height: 1.4;
+  }
+  
+  .page {
+    background: white;
+    padding: 1.5cm 1.25cm 1.2cm 1.5cm;
+    margin: 0 auto 20px;
+    width: 21cm;
+    min-height: 29.7cm;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    position: relative;
+    font-size: 8.5px;
+    color: #222;
+  }
+  
+  .page-num {
+    position: absolute;
+    top: 0.4cm;
+    right: 0.5cm;
+    font-size: 9px;
+    color: #999;
+  }
+  
+  .header-band {
+    border-bottom: 3px double #1a3a6c;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .brand {
+    font-size: 9px;
+    color: #1a3a6c;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 3px;
+  }
+  .title {
+    font-size: 14px;
+    color: #1a3a6c;
+    font-weight: 600;
+  }
+  .date {
+    font-size: 9px;
+    color: #666;
+    text-align: right;
+  }
+  
+  .section-label {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+  
+  .market-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .stat-card {
+    border-left: 2px solid #c89c4c;
+    padding: 3px 7px;
+  }
+  .stat-card .label {
+    font-size: 7px;
+    color: #666;
+  }
+  .stat-card .value {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #222;
+  }
+  
+  .insight-box {
+    background: #fafaf5;
+    border-left: 3px solid #c89c4c;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    font-size: 8.5px;
+    line-height: 1.55;
+  }
+  .insight-box.summary {
+    border-left-color: #1a3a6c;
+  }
+  .insight-box .label {
+    font-weight: 600;
+    color: #1a3a6c;
+    margin-bottom: 2px;
+    font-size: 9px;
+  }
+  
+  .self-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5px;
+    margin-bottom: 6px;
+  }
+  .self-table th {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 4px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    vertical-align: middle;
+  }
+  .self-table th.left { text-align: left; }
+  .self-table td {
+    padding: 3px 5px;
+    border-top: 0.5px solid #ddd;
+    line-height: 1.4;
+    vertical-align: middle;
+  }
+  .self-table td.center { text-align: center; }
+  .self-table td.axis-cell {
+    border-top: 1px solid #1a3a6c;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .axis-bg-a { background: #eef1f7; }
+  .axis-bg-b { background: #f3eff1; }
+  
+  .indicator-name {
+    font-weight: 600;
+    color: #222;
+    display: block;
+    font-size: 8px;
+  }
+  .indicator-sub {
+    color: #666;
+    font-size: 6.8px;
+    display: block;
+    margin-top: 1px;
+  }
+  
+  .content-cell {
+    line-height: 1.4;
+    font-size: 7.5px;
+  }
+  
+  .score-cell {
+    font-weight: 700;
+    font-size: 11px;
+    background: #fff3d6;
+    text-align: center;
+    width: 5%;
+  }
+  .score-5 { color: #2d5a2d; }
+  .score-4 { color: #3b6d3b; }
+  .score-3 { color: #555; }
+  .score-2 { color: #a37a00; }
+  .score-1 { color: #8a2929; }
+  
+  .estimate { color: #b8860b; font-size: 6.8px; font-style: italic; }
+  
+  .scale-legend {
+    display: flex;
+    gap: 8px;
+    background: #f4f4ee;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    font-size: 7.5px;
+  }
+  .scale-legend .item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .scale-legend .num {
+    font-weight: 700;
+    font-size: 9px;
+    width: 12px;
+    text-align: center;
+  }
+  
+  /* Bottom: radar + insight side by side */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 6.8cm 1fr;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  .radar-box {
+    border: 1px solid #ddd;
+    padding: 6px;
+    background: #fafaf8;
+  }
+  .radar-box .radar-title {
+    font-size: 9px;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: center;
+    margin-bottom: 3px;
+    border-bottom: 1px solid #1a3a6c;
+    padding-bottom: 2px;
+  }
+  .radar-svg {
+    display: block;
+    margin: 0 auto;
+  }
+  .radar-legend {
+    text-align: center;
+    font-size: 7px;
+    color: #666;
+    margin-top: 3px;
+  }
+  
+  .source-note {
+    font-size: 6.5px;
+    color: #999;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-num">PAGE 1 / 9 ・ CJ대한통운</div>
+  
+  <div class="header-band">
+    <div class="brand">CJ LOGISTICS GLOBAL LMD STRATEGY REPORT</div>
+    <div class="header-meta">
+      <div class="title">CJ대한통운 ・ 자체 역량 프로파일 (LMD 기준, 6축 × 21개 지표)</div>
+      <div class="date">성장추진담당 ・ 2026.05.08</div>
+    </div>
+  </div>
+
+  <div class="section-label">CJ대한통운 사업 스냅샷 (택배·이커머스 O-NE 부문 기준)</div>
+  
+  <div class="market-stats">
+    <div class="stat-card">
+      <div class="label">O-NE 매출 (2024)</div>
+      <div class="value">3조 7,289억원</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">O-NE 영업이익</div>
+      <div class="value">2,388억원</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">O-NE 영익률</div>
+      <div class="value">약 6.4%</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">일 최고 처리량</div>
+      <div class="value">920만 박스</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">한국 시장 점유율</div>
+      <div class="value">33.6% (1위)</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="label">CJ대한통운 LMD 사업 개요</div>
+    한국 LMD 시장 1위(33.6%, 일 최고 920만 박스) · 100년 업력(2030 예정) · 자동화(곤지암 메가허브·디지털트윈·ITS 10+단계 스캔)·사업다각화(CL·CBE·풀필먼트)·계열사 화주(CJ제일제당·올리브영·푸드빌)·M&A 경험(베트남 제마뎁 2017, 미국 DSC 2018 약 8억$, 인도 다슬 2017)이 한국 LMD 사업자 중 차별점 · 단점: 글로벌 LMD 시장 점유 0%, 태국·미얀마·말련 4년 -354억 철수 전례(2021) · 한국 인프라(거점·기사)는 해외 이식 불가, 한국 강점(자동화·시스템·브랜드·M&A 노하우)만 이식 가능
+  </div>
+
+  <div class="scale-legend">
+    <div class="item"><span class="num score-5">5</span>압도적 강점·차별화</div>
+    <div class="item"><span class="num score-4">4</span>강점·한국 1위</div>
+    <div class="item"><span class="num score-3">3</span>보유·평균</div>
+    <div class="item"><span class="num score-2">2</span>부분·약함</div>
+    <div class="item"><span class="num score-1">1</span>없음·매우 약함</div>
+  </div>
+
+  <div class="section-label">21개 지표 ・ CJ대한통운 자체 평가</div>
+
+  <table class="self-table">
+    <thead>
+      <tr>
+        <th class="left" style="width: 11%;">축</th>
+        <th class="left" style="width: 18%;">세부 지표</th>
+        <th class="left" style="width: 58%;">CJ대한통운 현황 (LMD 기준)</th>
+        <th style="width: 8%;">자체<br/>평가</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- 1. 인프라 규모·자산 (4개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="4" class="axis-cell axis-bg-a">1. 인프라<br/>규모·자산</td>
+        <td><span class="indicator-name">거점 인프라</span><span class="indicator-sub">허브 + SUB + 면적당 거점 밀도</span></td>
+        <td class="content-cell">분류 허브 약 280개 + 전국 SUB 다수 / 좁은 국토(10만㎢) 대비 거점 밀집도 높음 / 면적당 인프라 수 글로벌 상위권</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">특화·전략 허브</span><span class="indicator-sub">곤지암 메가허브 + MP 물성별 라인</span></td>
+        <td class="content-cell">곤지암 메가허브 아시아 최대급(연 면적 약 30만㎡) + MP 물성별 분류 라인(대형·신선·일반 특화)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">차량·기사 수</span><span class="indicator-sub">집화·배송 차량 + 기사 규모</span></td>
+        <td class="content-cell">택배 기사 약 2만명+ / 차량 운영 다수 / 일평균 처리 약 460만 박스(2024 일 최고 920만)</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">다양한 운송 수단</span><span class="indicator-sub">트럭·철도·항공·해운 활용</span></td>
+        <td class="content-cell">국내 LMD는 100% 트럭(좁은 국토·고밀도 도로망 / 철도·항공 활용 X) · 글로벌사업부 포워딩에서만 항공·해운 보유</td>
+        <td class="score-cell score-2">2</td>
+      </tr>
+
+      <!-- 2. 자동화·기술 시스템 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">2. 자동화·<br/>기술 시스템</td>
+        <td><span class="indicator-name">분류 자동화 설비</span><span class="indicator-sub">AGV · AMR · 휠소터</span></td>
+        <td class="content-cell">군포 스마트풀필먼트 AGV·AMR 다수 / 휠소터 + Cross-belt 분류기 도입 / 자체 분류 자동화 시스템 운영</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">운영 IT 시스템</span><span class="indicator-sub">AI 라우팅·디지털트윈·ITS 스캔</span></td>
+        <td class="content-cell">자체 AI 라우팅(라웃고) + 군포 디지털 트윈 도입 + ITS 전 상품 스캔(집화→배송 10+단계 세분화) + TES 물류기술 연구소 R&D</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">풀필먼트 자동화</span><span class="indicator-sub">e커머스 풀필먼트 자동화</span></td>
+        <td class="content-cell">군포·인천 e-Fulfillment 센터 + 미국 신축 / 보관·피킹·포장·발송 통합 자동화 / Last Mile Delivery 연계 융합형</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 3. 시장 입지·재무 (5개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="5" class="axis-cell axis-bg-a">3. 시장 입지·<br/>재무</td>
+        <td><span class="indicator-name">LMD 매출 (2024)</span><span class="indicator-sub">택배·이커머스 O-NE 세그먼트</span></td>
+        <td class="content-cell">3조 7,289억원 (+0.2% YoY) / 경기 둔화에도 물량 확대로 소폭 성장 / 4Q24 단독 9,513억원</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">LMD 영업이익률</span><span class="indicator-sub">O-NE 부문 영익률</span></td>
+        <td class="content-cell">영업이익 2,388억원 / 영익률 약 6.4% (4Q24 OPM 6.4%) / 글로벌 LMD사 평균(3~5%) 상회</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">시장 점유율</span><span class="indicator-sub">한국 택배 시장 내</span></td>
+        <td class="content-cell">한국 33.6% (1위) / 한진·롯데글로벌로지스 추격하나 격차 유지 / 주7일 배송 도입(2024) 점유 확대 추진</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">박스당 단가</span><span class="indicator-sub">GDP·평균임금 대비</span></td>
+        <td class="content-cell">약 2,500원 / 한국 GDP 대비 낮은 단가(저단가 시장) / 한진·롯데와 단가 격차 작음</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">3년 평균 Capex</span><span class="indicator-sub">2022~2024 자본적 지출</span></td>
+        <td class="content-cell"><span class="estimate">추정</span> 연 평균 약 2,500~3,500억원 (연결 기준) / 군포·인천 풀필먼트·디지털트윈·자동화 투자 지속 / 정확한 수치는 사업보고서 현금흐름표 재확인 필요</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+
+      <!-- 4. 운영 모델·노하우 (4개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="4" class="axis-cell axis-bg-b">4. 운영 모델·<br/>노하우</td>
+        <td><span class="indicator-name">채널 구조 (직영+대리점)</span><span class="indicator-sub">본사-집배점-인원 다층 + 노동 모델</span></td>
+        <td class="content-cell">본사 직영 + 전국 집배점(약 1,500+) + 인원 다층 구조 / 대리점 장점 ① 빠른 현지 확장 ② 자영업 동기 부여 ③ 본사 고정비 부담 분산 ④ 지역 밀착 영업력 / 노동: 정규직 + 위탁 혼합형</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">컨트롤 타워</span><span class="indicator-sub">사업 담당 다단계 운영</span></td>
+        <td class="content-cell">지역별 사업 담당 다단계 운영 체계 / 동종업계 CHRW(미국) 등과 유사 / 본사-지사-사업담당-집배점-기사 다층 통제</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">서비스 품질</span><span class="indicator-sub">정시배송·클레임·고객센터</span></td>
+        <td class="content-cell">대전 고객센터 전담 운영 + 챗봇 / 파손 보상 한도 50만원 / 주7일 배송 도입(2024) / 안전 최우선 (중대재해 대응 체계)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">해외 진출 경험</span><span class="indicator-sub">택배·LMD 해외 사업 이력</span></td>
+        <td class="content-cell">베트남(Gemadept 인수 2017)·미국(DSC 2018 약 8억$)·인도(Darcl 2017 50.95%) M&A 보유 / 단 택배 LMD 직진출은 태국·미얀마·말련 4년 -354억 철수 전례(2021) / 중국은 콜드체인 진출(LMD X)</td>
+        <td class="score-cell score-2">2</td>
+      </tr>
+
+      <!-- 5. 사업·서비스 포트폴리오 (2개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="2" class="axis-cell axis-bg-a">5. 사업·서비스<br/>포트폴리오</td>
+        <td><span class="indicator-name">사업 영역 다각화</span><span class="indicator-sub">LMD 외 보유 사업</span></td>
+        <td class="content-cell">5개 영역(CL 2.99조 / 택배·O-NE 3.73조 / 글로벌 4.43조 / E&C 건설) / 종합 물류기업 1930년 설립, 37개국 113개 법인</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">배송 서비스 다양성</span><span class="indicator-sub">주7일·새벽·당일·도어·퀵</span></td>
+        <td class="content-cell">5종+ 운영 (주7일 배송 2024 / 새벽·당일 / 도어투도어 / 퀵커머스 / CBE 해외직구) / "매일 오네(O-NE)" 브랜드</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 6. 고객·시너지·브랜드 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">6. 고객·시너지·<br/>브랜드</td>
+        <td><span class="indicator-name">계열사 화주</span><span class="indicator-sub">캡티브 화주 확보</span></td>
+        <td class="content-cell">CJ제일제당·올리브영·푸드빌·CGV 등 그룹 다수 / 한국 5대 재벌 캡티브 화주 / 식품·뷰티·콘텐츠 다각 화주 보유</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">외부 고객 다양성</span><span class="indicator-sub">D2C·편의점·당근·네이버 등</span></td>
+        <td class="content-cell">편의점(주요 4사)·당근·네이버·신세계·쿠팡(일부)·해외직구 셀러 다수 / D2C 비중 높음 / 특정 커머스 의존 X</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td><span class="indicator-name">그룹 자본·파트너십·M&A</span><span class="indicator-sub">CJ그룹 자본 + 현지 MOU + M&A 사례</span></td>
+        <td class="content-cell">CJ그룹(한국 5대 재벌) + CP MOU(태국 2025.11) / <strong>M&A 보유 사례</strong>: 베트남 Gemadept(2017) · 미국 DSC Logistics(2018 약 8억$) · 인도 Darcl Logistics(2017 50.95%) · 미국(전략국가 직접 투자) · 중동(사우디·UAE 진출)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- === 육각형 + 시사점 좌우 배치 === -->
+  <div class="bottom-grid">
+    <div class="radar-box">
+      <div class="radar-title">6축 평균 자체 평가 (5점 만점)</div>
+      <svg class="radar-svg" width="230" height="230" viewBox="-115 -115 230 230">
+        <!-- 5단계 그리드 hexagon (vertices at: top, top-right, bot-right, bot, bot-left, top-left) -->
+        <polygon points="0,-90 77.94,-45 77.94,45 0,90 -77.94,45 -77.94,-45" fill="none" stroke="#ccc" stroke-width="0.5"/>
+        <polygon points="0,-72 62.35,-36 62.35,36 0,72 -62.35,36 -62.35,-36" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-54 46.77,-27 46.77,27 0,54 -46.77,27 -46.77,-27" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-36 31.18,-18 31.18,18 0,36 -31.18,18 -31.18,-18" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-18 15.59,-9 15.59,9 0,18 -15.59,9 -15.59,-9" fill="none" stroke="#eee" stroke-width="0.5"/>
+        
+        <!-- 축 라인 -->
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="0" y2="90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        
+        <!-- 데이터 polygon
+             축별 평균:
+             1.인프라 3.25 → 0.65 × 90 = 58.5
+             2.자동화 4.0 → 0.8 × 90 = 72
+             3.시장재무 3.4 → 0.68 × 90 = 61.2
+             4.운영 3.25 → 58.5
+             5.사업서비스 4.0 → 72
+             6.고객 4.0 → 72
+             
+             좌표 (top=12시 기준 시계방향):
+             1.인프라(12시): (0, -58.5)
+             2.자동화(2시, +60°): (sin60×72, -cos60×72) = (62.35, -36)
+             3.시장재무(4시, +120°): (sin60×61.2, cos60×61.2) = (53, 30.6)
+             4.운영(6시): (0, 58.5)
+             5.사업서비스(8시): (-62.35, 36)
+             6.고객(10시): (-62.35, -36)
+        -->
+        <polygon points="0,-58.5 62.35,-36 53,30.6 0,58.5 -62.35,36 -62.35,-36" 
+                 fill="rgba(26,58,108,0.25)" stroke="#1a3a6c" stroke-width="1.5"/>
+        
+        <!-- 데이터 점 -->
+        <circle cx="0" cy="-58.5" r="2.5" fill="#1a3a6c"/>
+        <circle cx="62.35" cy="-36" r="2.5" fill="#1a3a6c"/>
+        <circle cx="53" cy="30.6" r="2.5" fill="#1a3a6c"/>
+        <circle cx="0" cy="58.5" r="2.5" fill="#1a3a6c"/>
+        <circle cx="-62.35" cy="36" r="2.5" fill="#1a3a6c"/>
+        <circle cx="-62.35" cy="-36" r="2.5" fill="#1a3a6c"/>
+        
+        <!-- 라벨 -->
+        <text x="0" y="-100" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">1.인프라</text>
+        <text x="0" y="-92" text-anchor="middle" font-size="7" fill="#666">3.3</text>
+        
+        <text x="94" y="-50" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">2.자동화</text>
+        <text x="94" y="-40" text-anchor="middle" font-size="7" fill="#666">4.0</text>
+        
+        <text x="94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">3.시장재무</text>
+        <text x="94" y="65" text-anchor="middle" font-size="7" fill="#666">3.4</text>
+        
+        <text x="0" y="106" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">4.운영모델</text>
+        <text x="0" y="97" text-anchor="middle" font-size="7" fill="#666">3.3</text>
+        
+        <text x="-94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">5.사업서비스</text>
+        <text x="-94" y="65" text-anchor="middle" font-size="7" fill="#666">4.0</text>
+        
+        <text x="-94" y="-50" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">6.고객시너지</text>
+        <text x="-94" y="-40" text-anchor="middle" font-size="7" fill="#666">4.0</text>
+        
+        <!-- 중심점 -->
+        <circle cx="0" cy="0" r="1" fill="#666"/>
+      </svg>
+      <div class="radar-legend">전체 평균 3.67 / 5.0 ・ 점수는 회의 합의 후 조정 가능</div>
+    </div>
+
+    <div class="insight-box summary" style="margin-bottom: 0;">
+      <div class="label">진출 전략 시사점</div>
+      <strong>이식 가능 강점</strong> (자동화·시스템·브랜드·M&A 노하우): 글로벌 진출 시 한국에서 검증된 핵심 자산 그대로 이식 가능. 특히 자동화(4.0)·사업서비스(4.0)·고객시너지(4.0)는 글로벌 LMD 사업자 대비 차별 영역.<br/><br/>
+      <strong>이식 불가 영역</strong> (한국 내 거점·기사망 / 다양한 운송 수단 2점): 한국 인프라는 좁은 국토 기반이라 해외 직진출 어려움. 다중 운송 수단(철도·항공)은 미국·중국·베트남 사업자가 강점.<br/><br/>
+      <strong>진출 모델</strong>: 단순 라스트마일 직진출 X (2021년 태국·말련 4년 -354억 철수 전례). CL·콜드체인·CBE 중심 + 현지 M&A·JV (베트남 Gemadept·미국 DSC·인도 Darcl 패턴) + 캡티브 화주(CJ제일제당·올리브영) 동행 결합 모델.
+    </div>
+  </div>
+
+  <div class="source-note">
+    출처: CJ대한통운 2024 잠정 실적 공시(2025.02.11) · CJ대한통운 보도자료 · 이비엔뉴스(2025.02.11) · 콜드체인뉴스(2025.02.19) · 바이라인네트워크(2025.02.11) · 국민일보(2025.02.11) · 상상인증권 이서연 4Q24 프리뷰 · FnGuide CompanyGuide CJ대한통운(A000120) · CJ그룹 사업보고서 IR자료실(cj.net) ・ <span class="estimate">추정</span>: 3년 평균 Capex (사업보고서 현금흐름표 직접 확인 필요)
+  </div>
+
+</div>
+
+</body>
+</html>

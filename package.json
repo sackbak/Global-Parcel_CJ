@@ -1,0 +1,14 @@
+{
+  "name": "cj-lmd-report",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CJ대한통운 글로벌 LMD 역량 비교 - 협업 편집 가능 단일 페이지",
+  "type": "module",
+  "scripts": {
+    "build": "powershell -ExecutionPolicy Bypass -Command \"& { . ./build_index.ps1 }\"",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/kv": "^3.0.0"
+  }
+}

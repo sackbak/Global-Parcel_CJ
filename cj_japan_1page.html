@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>일본 LMD ・ CJ vs 야마토 · 사가와</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm 1.25cm 1.2cm 1.5cm;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: #e8e6e0;
+    color: #222;
+    padding: 16px;
+    line-height: 1.4;
+  }
+  
+  .page {
+    background: white;
+    padding: 1.5cm 1.25cm 1.2cm 1.5cm;
+    margin: 0 auto 20px;
+    width: 21cm;
+    min-height: 29.7cm;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    position: relative;
+    font-size: 8.5px;
+    color: #222;
+  }
+  
+  .page-num {
+    position: absolute;
+    top: 0.4cm;
+    right: 0.5cm;
+    font-size: 9px;
+    color: #999;
+  }
+  
+  .header-band {
+    border-bottom: 3px double #1a3a6c;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .brand {
+    font-size: 9px;
+    color: #1a3a6c;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 3px;
+  }
+  .title {
+    font-size: 13px;
+    color: #1a3a6c;
+    font-weight: 600;
+  }
+  .date {
+    font-size: 9px;
+    color: #666;
+    text-align: right;
+  }
+  
+  .section-label {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+  
+  .market-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .stat-card {
+    border-left: 2px solid #c89c4c;
+    padding: 3px 7px;
+  }
+  .stat-card .label {
+    font-size: 7px;
+    color: #666;
+  }
+  .stat-card .value {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #222;
+  }
+  
+  .insight-box {
+    background: #fafaf5;
+    border-left: 3px solid #c89c4c;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    font-size: 8.5px;
+    line-height: 1.55;
+  }
+  .insight-box.summary {
+    border-left-color: #1a3a6c;
+  }
+  .insight-box .label {
+    font-weight: 600;
+    color: #1a3a6c;
+    margin-bottom: 2px;
+    font-size: 9px;
+  }
+  
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7px;
+    margin-bottom: 6px;
+  }
+  .comp-table th {
+    background: #1a3a6c;
+    color: #fff;
+    padding: 4px 3px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    vertical-align: middle;
+  }
+  .comp-table th.left { text-align: left; }
+  .comp-table th.cj-col {
+    background: #c89c4c;
+    color: #1a1a1a;
+    border-left: 2px solid #fff;
+  }
+  .comp-table th.player {
+    background: #284f8a;
+    border-left: 1px solid #fff;
+  }
+  .comp-table th.score-col {
+    background: #1a3a6c;
+    font-size: 7px;
+    border-left: 1px solid #fff;
+  }
+  .comp-table td {
+    padding: 2.5px 4px;
+    border-top: 0.5px solid #ddd;
+    line-height: 1.35;
+    vertical-align: middle;
+    text-align: center;
+  }
+  .comp-table td.left { text-align: left; }
+  .comp-table td.axis-cell {
+    border-top: 1px solid #1a3a6c;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 7.5px;
+  }
+  .axis-bg-a { background: #eef1f7; }
+  .axis-bg-b { background: #f3eff1; }
+  
+  .indicator-name {
+    font-weight: 600;
+    color: #222;
+    display: block;
+    font-size: 7.5px;
+  }
+  .indicator-sub {
+    color: #666;
+    font-size: 6.5px;
+    display: block;
+    margin-top: 1px;
+  }
+  
+  .cj-cell { background: #fffaf0; }
+  .estimate { color: #b8860b; font-size: 6.5px; font-style: italic; }
+  
+  .score-cell {
+    font-weight: 700;
+    font-size: 10px;
+    background: #f4f4ee;
+    text-align: center;
+    width: 3.5%;
+  }
+  .score-cell.cj { background: #fff3d6; }
+  .score-5 { color: #2d5a2d; }
+  .score-4 { color: #3b6d3b; }
+  .score-3 { color: #555; }
+  .score-2 { color: #a37a00; }
+  .score-1 { color: #8a2929; }
+  
+  .scale-legend {
+    display: flex;
+    gap: 8px;
+    background: #f4f4ee;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    font-size: 7.5px;
+  }
+  .scale-legend .item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .scale-legend .num {
+    font-weight: 700;
+    font-size: 9px;
+    width: 12px;
+    text-align: center;
+  }
+  
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 6.8cm 1fr;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  .radar-box {
+    border: 1px solid #ddd;
+    padding: 6px;
+    background: #fafaf8;
+  }
+  .radar-title {
+    font-size: 9px;
+    font-weight: 600;
+    color: #1a3a6c;
+    text-align: center;
+    margin-bottom: 3px;
+    border-bottom: 1px solid #1a3a6c;
+    padding-bottom: 2px;
+  }
+  .radar-svg {
+    display: block;
+    margin: 0 auto;
+  }
+  .radar-legend-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    font-size: 7px;
+    margin-top: 3px;
+  }
+  .radar-legend-row .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 2px;
+    vertical-align: middle;
+  }
+  .legend-cj { background: #c89c4c; }
+  .legend-p1 { background: #1a3a6c; }
+  .legend-p2 { background: #8a2929; }
+  
+  .source-note {
+    font-size: 6.5px;
+    color: #999;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-num">PAGE 5 / 9 ・ 일본</div>
+  
+  <div class="header-band">
+    <div class="brand">CJ LOGISTICS GLOBAL LMD STRATEGY REPORT</div>
+    <div class="header-meta">
+      <div class="title">일본 ・ CJ대한통운 vs 야마토(1위) · 사가와 SG Holdings(2위)</div>
+      <div class="date">성장추진담당 ・ 2026.05.08</div>
+    </div>
+  </div>
+
+  <div class="section-label">시장 스냅샷</div>
+  
+  <div class="market-stats">
+    <div class="stat-card">
+      <div class="label">택배 시장 (FY24)</div>
+      <div class="value">약 ¥4조엔 (약 38조원)</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">도로화물 CAGR (~2031)</div>
+      <div class="value">3.62%</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">연 박스량 (2024)</div>
+      <div class="value">약 50억+ 개</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">3강 점유 (Yamato+Sagawa+JP)</div>
+      <div class="value">약 90%+</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="label">일본 LMD 시장 핵심</div>
+    3강 과점(야마토 41% / 사가와 약 28~30% / 일본우정) · 100년 업력 야마토(1919)·68년 사가와(1957) 시장 지배 · "2024년 문제"(트럭 운전사 연 960시간 잔업 제한 발효 2024.04)로 인건비·운임 상승 압박 · 인구 감소·고령화로 시장 성장률 둔화(3% 내외) · 콜드체인(Cool TA-Q-BIN), 의료 배송, 헬스케어 등 고부가가치 영역 확대 · 야마토는 글로벌 M&A 적극(향후 4,000억엔급 계획), 사가와는 Morrison Express(2025.02) 인수로 글로벌 확장 · 외국계 진입 사실상 불가능, 한국과 시장 구조 가장 유사하나 진입 장벽 매우 높음
+  </div>
+
+  <div class="scale-legend">
+    <div class="item"><span class="num score-5">5</span>압도적 강점·차별화</div>
+    <div class="item"><span class="num score-4">4</span>강점·한국 1위</div>
+    <div class="item"><span class="num score-3">3</span>보유·평균</div>
+    <div class="item"><span class="num score-2">2</span>부분·약함</div>
+    <div class="item"><span class="num score-1">1</span>없음·매우 약함</div>
+  </div>
+
+  <div class="section-label">21개 역량 지표 비교 ・ CJ대한통운 vs 야마토 · 사가와</div>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th class="left" style="width: 10%;">축</th>
+        <th class="left" style="width: 14%;">세부 지표</th>
+        <th class="cj-col" style="width: 23%;">CJ대한통운 (한국)</th>
+        <th class="score-col">점수</th>
+        <th class="player" style="width: 23%;">야마토 운수 (1위, 41%)</th>
+        <th class="score-col">점수</th>
+        <th class="player" style="width: 23%;">사가와 急便 / SG Holdings (2위, 28~30%)</th>
+        <th class="score-col">점수</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- 1. 인프라 규모·자산 (4개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="4" class="axis-cell axis-bg-a">1. 인프라<br/>규모·자산</td>
+        <td class="left"><span class="indicator-name">거점 인프라</span><span class="indicator-sub">허브 + SUB + 면적당 밀도</span></td>
+        <td class="cj-cell left">분류 허브 약 280개 + 전국 SUB / 좁은 국토 거점 밀집</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">전국 약 6,000개+ TA-Q-BIN 영업소(통합 축소 중) / 100% 일본 커버 / 글로벌 M&A 확장</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">전국 영업소 약 400+ + 차량 26,000대 / 100% 일본 커버 + Morrison Express(2025) 글로벌 확장</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">특화·전략 허브</span><span class="indicator-sub">메가허브 · 물성별 라인</span></td>
+        <td class="cj-cell left">곤지암 메가허브(아시아급) + MP 물성별 라인</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Atsugi Gateway·Haneda Cool 등 메가허브 + Cool TA-Q-BIN(콜드체인 전용) + Multimodal</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">전국 분류 허브 + Sagawa Global Logistics(冷蔵·일관물류) 통합</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">차량·기사 수</span><span class="indicator-sub">집화·배송 차량 + 기사</span></td>
+        <td class="cj-cell left">기사 약 2만+ / 차량 다수</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">차량 약 60,000대 + 직원 약 21만명 (정규+위탁) / 일본 최대 규모</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">차량 약 26,000대 + 직원 약 85,000명 / 정규직 위주, 안정 운영</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">다양한 운송 수단</span><span class="indicator-sub">트럭 + 철도 + 항공 + 해운</span></td>
+        <td class="cj-cell left">100% 트럭 (좁은 국토)</td>
+        <td class="score-cell cj score-2">2</td>
+        <td class="left">트럭 + 항공(Narita·Haneda 등 5개 공항 화물기 직접 운영, 2024) + 해운(국제 cross-border)</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">트럭 + 항공(DHL SAF 파트너십 2025.04) + 일부 해운</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+
+      <!-- 2. 자동화·기술 시스템 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">2. 자동화·<br/>기술 시스템</td>
+        <td class="left"><span class="indicator-name">분류 자동화 설비</span><span class="indicator-sub">AGV · AMR · 휠소터</span></td>
+        <td class="cj-cell left">군포 AGV·AMR·휠소터 다수</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Atsugi Gateway 자동분류 + DX 추진(분류·운송·근무방식 디지털 개혁) + 로봇 도입</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Sumitomo·Dexterity와 로봇틱스 협업(2024) + SG System DX 추진</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">운영 IT 시스템</span><span class="indicator-sub">AI 라우팅·디지털트윈·스캔</span></td>
+        <td class="cj-cell left">AI 라우팅·디지털트윈·ITS 10+단계 스캔</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Yamato Digital Platform + AI 라우팅 + 일본 우정과 데이터 협업(Kuroneko Yu-Packet)</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">AI 라우팅으로 공차율 12% 개선 / SG System 사내 IT 자회사 보유</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">풀필먼트 자동화</span><span class="indicator-sub">e커머스 풀필먼트 자동화</span></td>
+        <td class="cj-cell left">군포·인천·미국 풀필먼트 신축</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Corporate Business Unit 풀필먼트 72개 거점, 클라이언트 1,700개 + 직원 약 10만명</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Sagawa Global Logistics 풀필먼트 + Morrison Express 인수로 글로벌 풀필먼트 확장</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 3. 시장 입지·재무 (5개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="5" class="axis-cell axis-bg-a">3. 시장 입지·<br/>재무</td>
+        <td class="left"><span class="indicator-name">LMD 매출 (2024)</span><span class="indicator-sub">택배·LMD 세그먼트만</span></td>
+        <td class="cj-cell left">O-NE 3.73조원 (약 27억$)</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">Retail(LMD) FY24 ¥8,779억엔(약 8조 4천억원) / 전사 ¥1.76조엔(약 17조원) / -1.9% YoY</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">전사 FY23 ¥1.32조엔(약 12.7조원) / <span class="estimate">추정</span> Delivery 약 8,000~9,000억엔(약 7~8조원)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">LMD 영업이익률</span><span class="indicator-sub">LMD 부문 영익률</span></td>
+        <td class="cj-cell left">약 6.4% (2,388억원)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Retail 부문 약 1~3% (2024년 문제 영향 + 비용 증가) / 전사 약 2.8% (FY24 영익 ¥500억엔)</td>
+        <td class="score-cell score-2">2</td>
+        <td class="left"><span class="estimate">추정</span> 약 5~6% (FY16 ¥49B엔/¥930B엔 = 5.3% / 최근 비슷한 수준 추정)</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">시장 점유율</span><span class="indicator-sub">자국 내 LMD 점유</span></td>
+        <td class="cj-cell left">한국 33.6% (1위)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">일본 41% (1위, 일본 LMD 절대 강자 / 한국 CJ보다 점유율 높음)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">일본 약 28~30% (2위)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">박스당 단가</span><span class="indicator-sub">GDP·임금 대비</span></td>
+        <td class="cj-cell left">약 2,500원 / GDP 대비 낮음</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">평균 ¥800~1,000(약 7,000~9,000원, 한국 3배) / 2024년 문제 이후 추가 인상 진행</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">평균 ¥700~900(약 6,000~8,000원, 한국 3배) / 야마토 대비 약간 저렴</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">3년 평균 Capex</span><span class="indicator-sub">2022~2024 자본적 지출</span></td>
+        <td class="cj-cell left"><span class="estimate">추정</span> 연 2,500~3,500억원</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left"><span class="estimate">추정</span> 연 ¥800~1,000억엔(약 7,000~9,000억원) / EV·자동화·M&A 투자 활발</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left"><span class="estimate">추정</span> 연 ¥500~700억엔(약 4,500~6,000억원) / Morrison 인수 등 글로벌 확장</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+
+      <!-- 4. 운영 모델·노하우 (4개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="4" class="axis-cell axis-bg-b">4. 운영 모델·<br/>노하우</td>
+        <td class="left"><span class="indicator-name">채널 구조 (직영+대리점)</span><span class="indicator-sub">직영·집배점·인원 다층 + 노동 모델</span></td>
+        <td class="cj-cell left">본사-집배점-인원 다층 + 정규직+위탁 혼합</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">100% 직영 + 정규직 21만명 / 일본식 종신고용 모델 (안정성 高, 인건비 부담)</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">100% 직영 + 정규직 위주 / 사가와 인사·홍보·물류 통합 그룹 운영</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">컨트롤 타워</span><span class="indicator-sub">사업 담당 다단계 운영</span></td>
+        <td class="cj-cell left">사업 담당 다단계</td>
+        <td class="score-cell cj score-3">3</td>
+        <td class="left">100년 노하우, 본사-지사-영업소 다단계 / 2021 Yamato Holdings 통합 단일 체제</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">SG Holdings(2006 출범) 통합 통제 + Sagawa Express·SG Realty·SG Moving 등 6개 자회사</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">서비스 품질</span><span class="indicator-sub">정시배송·클레임·고객센터</span></td>
+        <td class="cj-cell left">대전 고객센터 + 챗봇, 클레임 50만원 보상</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">"검은 고양이" 글로벌 신뢰 브랜드 / Cool TA-Q-BIN 콜드체인 표준 / 일본식 정밀 서비스</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">B2B 강점, 일본식 정시 배송 + Sagawa Global 국제 솔루션</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">해외 진출 경험</span><span class="indicator-sub">택배·LMD 해외 사업</span></td>
+        <td class="cj-cell left">동남아·중국 콜드체인 / 태국·말련 4년 -354억 철수 전례</td>
+        <td class="score-cell cj score-2">2</td>
+        <td class="left">대만(T-Cat 라이선스)·말련·싱가포르·중국 cross-border 등 다국 진출 / 향후 4,000억엔급 M&A 계획</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Morrison Express 인수(2025.02, 글로벌 화물 포워딩) + DHL SAF 파트너십</td>
+        <td class="score-cell score-3">3</td>
+      </tr>
+
+      <!-- 5. 사업·서비스 포트폴리오 (2개) -->
+      <tr class="axis-bg-a">
+        <td rowspan="2" class="axis-cell axis-bg-a">5. 사업·서비스<br/>포트폴리오</td>
+        <td class="left"><span class="indicator-name">사업 영역 다각화</span><span class="indicator-sub">LMD 외 보유 사업</span></td>
+        <td class="cj-cell left">5개 영역(CL·택배·Global·CBE·E&C)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">Retail + Corporate(CL) + Global + Mobility(차량 정비·EV) + New Business / 5개+ 영역</td>
+        <td class="score-cell score-4">4</td>
+        <td class="left">Delivery + Logistics + Real Estate + Moving + Forwarding(Morrison) / 5개 영역</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">배송 서비스 다양성</span><span class="indicator-sub">주7일·새벽·당일·도어·퀵</span></td>
+        <td class="cj-cell left">5종+(주7일·새벽·당일·도어·퀵커머스)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">TA-Q-BIN + Cool TA-Q-BIN(콜드) + 의료(Kuroneko 헬스케어) + 골프·DM + Yu-Packet(JP Post 연계)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">택배 + 콜드 + 항공 + 의료 + Hanger 운송(특수, 1980 도입) / 4~5종</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+      <!-- 6. 고객·시너지·브랜드 (3개) -->
+      <tr class="axis-bg-b">
+        <td rowspan="3" class="axis-cell axis-bg-b">6. 고객·시너지·<br/>브랜드</td>
+        <td class="left"><span class="indicator-name">계열사 화주</span><span class="indicator-sub">캡티브 화주 확보</span></td>
+        <td class="cj-cell left">제일제당·올리브영·푸드빌·CGV 등 다수</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">없음 (독립 운영) / 대신 거대 외부 화주 기반(라쿠텐·아마존JP·메루카리·NIKE 등)</td>
+        <td class="score-cell score-2">2</td>
+        <td class="left">없음 (독립 운영) / B2B 화주 강점 (자동차·전자·식품 등)</td>
+        <td class="score-cell score-2">2</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">외부 고객 다양성</span><span class="indicator-sub">D2C 비중 · 특정 의존 X</span></td>
+        <td class="cj-cell left">편의점·당근·네이버 등 다수, D2C 비중 高</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">아마존JP·라쿠텐·메루카리·자라·NIKE + 1,700개 기업 + 개인 C2C 다수 / 다양성 압도</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">B2B 화주 다수(전자·자동차) + e커머스 (아마존 비중 일부)</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+      <tr>
+        <td class="left"><span class="indicator-name">그룹 자본·파트너십·M&A</span><span class="indicator-sub">자본력 + 현지 MOU + M&A</span></td>
+        <td class="cj-cell left">CJ그룹 + CP MOU + M&A(베트남 Gemadept 2017·미 DSC 2018·인 Darcl 2017)</td>
+        <td class="score-cell cj score-4">4</td>
+        <td class="left">TYO 상장(시총 약 ¥1조엔/9조원) + 향후 4,000억엔급 M&A 계획(미·멕·인·동남아·중국 타깃)</td>
+        <td class="score-cell score-5">5</td>
+        <td class="left">TYO 상장(9143, 시총 약 ¥1.2조엔/11조원) + Morrison Express 인수(2025.02) + DHL 협업</td>
+        <td class="score-cell score-4">4</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- === 비교 육각형 + 시사점 === -->
+  <div class="bottom-grid">
+    <div class="radar-box">
+      <div class="radar-title">6축 평균 비교 (5점 만점)</div>
+      <svg class="radar-svg" width="230" height="230" viewBox="-115 -115 230 230">
+        <!-- 5단계 그리드 -->
+        <polygon points="0,-90 77.94,-45 77.94,45 0,90 -77.94,45 -77.94,-45" fill="none" stroke="#ccc" stroke-width="0.5"/>
+        <polygon points="0,-72 62.35,-36 62.35,36 0,72 -62.35,36 -62.35,-36" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-54 46.77,-27 46.77,27 0,54 -46.77,27 -46.77,-27" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-36 31.18,-18 31.18,18 0,36 -31.18,18 -31.18,-18" fill="none" stroke="#ddd" stroke-width="0.5"/>
+        <polygon points="0,-18 15.59,-9 15.59,9 0,18 -15.59,9 -15.59,-9" fill="none" stroke="#eee" stroke-width="0.5"/>
+        
+        <!-- 축 라인 -->
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="0" y2="90" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="45" stroke="#bbb" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="-77.94" y2="-45" stroke="#bbb" stroke-width="0.5"/>
+        
+        <!-- CJ대한통운 (골드) 6축 평균: 3.25, 4.0, 3.4, 3.25, 4.0, 4.0 -->
+        <polygon points="0,-58.5 62.35,-36 53,30.6 0,58.5 -62.35,36 -62.35,-36" 
+                 fill="rgba(200,156,76,0.20)" stroke="#c89c4c" stroke-width="1.5"/>
+        
+        <!-- 야마토 (네이비)
+             1.인프라 (5+5+5+4)/4=4.75 / 2.자동화 (4+4+4)/3=4.0 / 3.시장재무 (5+2+5+4+4)/5=4.0 / 4.운영 (4+4+5+4)/4=4.25 / 5.사업 (4+5)/2=4.5 / 6.고객 (2+5+5)/3=4.0
+             좌표:
+             1: 0, -85.5
+             2: 62.35, -36
+             3: 62.35, 36
+             4: 0, 76.5
+             5: -70.15, 40.5
+             6: -62.35, -36 -->
+        <polygon points="0,-85.5 62.35,-36 62.35,36 0,76.5 -70.15,40.5 -62.35,-36" 
+                 fill="rgba(26,58,108,0.20)" stroke="#1a3a6c" stroke-width="1.5"/>
+        
+        <!-- 사가와 (다크 레드)
+             1.인프라 (4+4+4+3)/4=3.75 / 2.자동화 (4+4+4)/3=4.0 / 3.시장재무 (4+3+4+4+3)/5=3.6 / 4.운영 (3+4+4+3)/4=3.5 / 5.사업 (4+4)/2=4.0 / 6.고객 (2+4+4)/3=3.33
+             좌표:
+             1: 0, -67.5
+             2: 62.35, -36
+             3: 56.12, 32.4
+             4: 0, 63
+             5: -62.35, 36
+             6: -52.0, -30 -->
+        <polygon points="0,-67.5 62.35,-36 56.12,32.4 0,63 -62.35,36 -52,-30" 
+                 fill="rgba(138,41,41,0.18)" stroke="#8a2929" stroke-width="1.5"/>
+        
+        <!-- 라벨 -->
+        <text x="0" y="-100" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">1.인프라</text>
+        <text x="94" y="-43" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">2.자동화</text>
+        <text x="94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">3.시장재무</text>
+        <text x="0" y="103" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">4.운영모델</text>
+        <text x="-94" y="56" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">5.사업서비스</text>
+        <text x="-94" y="-43" text-anchor="middle" font-size="8" font-weight="600" fill="#1a3a6c">6.고객시너지</text>
+        
+        <circle cx="0" cy="0" r="1" fill="#666"/>
+      </svg>
+      <div class="radar-legend-row">
+        <span><span class="dot legend-cj"></span>CJ 3.67</span>
+        <span><span class="dot legend-p1"></span>야마토 4.25</span>
+        <span><span class="dot legend-p2"></span>사가와 3.70</span>
+      </div>
+    </div>
+
+    <div class="insight-box summary" style="margin-bottom: 0;">
+      <div class="label">일본 역량 비교 시사점</div>
+      <strong>CJ vs 야마토:</strong> 야마토는 100년 업력·시장 41%·차량 6만대·항공 운영·콜드체인(Cool TA-Q-BIN) 표준·M&A 적극(향후 4,000억엔 계획) 모두 CJ 압도. CJ의 강점인 자동화·서비스 다양성도 야마토와 동급 또는 열위.<br/><br/>
+      <strong>CJ vs 사가와:</strong> 매출·이익률 등 재무는 CJ가 비슷하거나 약간 우위. 그러나 사가와는 일본 B2B 시장 지배 + Morrison Express(2025.02)로 글로벌 확장 시작. 한국 LMD 사업자 중 사가와와 가장 견줄 만함.<br/><br/>
+      <strong>CJ의 상대적 강점:</strong> 계열사 캡티브 화주(CJ제일제당·올리브영) — 야마토·사가와는 캡티브 X. 외부 고객 다양성은 일본 사업자에 열위.<br/><br/>
+      <strong>진입 모델:</strong> 일본 직진출 X (3강 과점 + 100년 업력 + 외국계 진입 사실상 불가) → ① <strong>한·일 K-Beauty/K-Food CBE</strong> (한국→일본 역직구 솔루션, 야마토 cross-border 협업 가능) ② <strong>CL·풀필먼트 한정 진입</strong> (B2B 중심) ③ <strong>한·일 물류 동맹 검토</strong> (CJ-야마토/사가와 JV 또는 MOU) ④ M&A는 비현실적(시총 격차 + 일본 보호주의).
+    </div>
+  </div>
+
+  <div class="source-note">
+    출처: Yamato Holdings Integrated Report 2024 · Yamato Holdings Consolidated Financial Results FY24(2024.03) / FY25(2025.03) · Statista Yamato Operating Revenue 2024 · Mordor Intelligence Japan Domestic Courier 2025 · Mordor Intelligence Japan Road Freight 2026 · Wikipedia Yamato Transport · Sagawa Express Wikipedia · Grokipedia Sagawa Express · World Benchmarking Alliance SG Holdings · Companydata SG Holdings · PitchBook Sagawa Express ・ <span class="estimate">추정</span> 표시는 비공시 항목(LMD 단독 매출·영익률·Capex 등) 산업 평균 기반 추정치
+  </div>
+
+</div>
+
+</body>
+</html>
