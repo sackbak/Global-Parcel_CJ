@@ -1274,23 +1274,13 @@
   document.addEventListener('mousedown', (e) => {
     const cell = e.target.closest && e.target.closest('.editable');
     if (!cell) {
-      if (!toolbar.contains(e.target)
-          && !document.getElementById('color-popover')?.contains(e.target)
-          && !document.getElementById('score-picker')?.contains(e.target)) {
+      if (!toolbar.contains(e.target) && !document.getElementById('color-popover')?.contains(e.target) && !document.getElementById('score-picker')?.contains(e.target)) {
         clearMulti();
       }
       return;
     }
+    if (cell.classList.contains('score-cell')) { clearMulti(); return; }
 
-    // 점수 셀: 텍스트 포커스 막고 즉시 픽커 (click 이벤트에 의존 X)
-    if (cell.classList.contains('score-cell')) {
-      e.preventDefault();
-      clearMulti();
-      showScorePicker(cell);
-      return;
-    }
-
-    // Shift+click: 범위 선택
     if (e.shiftKey && lastClickedCell) {
       e.preventDefault();
       selectCellRange(lastClickedCell, cell);
@@ -1298,7 +1288,6 @@
       positionToolbar();
       return;
     }
-    // Ctrl+click: 토글
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       if (multiSelected.has(cell)) {
@@ -1309,45 +1298,20 @@
       positionToolbar();
       return;
     }
-    // 더블클릭 이상: 브라우저 워드 선택 허용
-    if (e.detail >= 2) {
-      lastClickedCell = cell;
-      return;
-    }
-    // 단일 클릭: 브라우저 텍스트 선택 차단, mouseup에서 커서 수동 배치
-    e.preventDefault();
     lastClickedCell = cell;
     dragStartCell = cell;
     dragInitialPos = { x: e.clientX, y: e.clientY };
     dragActive = false;
-    pendingFocusCell = cell;
-    pendingFocusPoint = { x: e.clientX, y: e.clientY };
   });
 
-  let pendingFocusCell = null;
-  let pendingFocusPoint = null;
-
-  function placeCursorAt(cell, x, y) {
-    cell.focus();
-    let range = null;
-    if (document.caretRangeFromPoint) {
-      range = document.caretRangeFromPoint(x, y);
-    } else if (document.caretPositionFromPoint) {
-      const pos = document.caretPositionFromPoint(x, y);
-      if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
-    }
-    if (range) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); }
-  }
-
   document.addEventListener('mousemove', (e) => {
-    if (!dragStartCell) return;
+    if (!dragStartCell || !dragInitialPos) return;
     const dx = Math.abs(e.clientX - dragInitialPos.x);
     const dy = Math.abs(e.clientY - dragInitialPos.y);
     if (!dragActive && (dx > 5 || dy > 5)) {
       const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
       if (overCell && overCell !== dragStartCell && !overCell.classList.contains('score-cell')) {
         dragActive = true;
-        pendingFocusCell = null;
         clearMulti();
         document.body.classList.add('cell-dragging');
         window.getSelection()?.removeAllRanges();
@@ -1355,6 +1319,7 @@
     }
     if (dragActive) {
       e.preventDefault();
+      window.getSelection()?.removeAllRanges();
       const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
       if (overCell && !overCell.classList.contains('score-cell')) {
         selectCellRange(dragStartCell, overCell);
@@ -1367,14 +1332,8 @@
       document.body.classList.remove('cell-dragging');
       window.getSelection()?.removeAllRanges();
       if (multiSelected.size > 0) { currentEditable = dragStartCell; positionToolbar(); }
-    } else if (pendingFocusCell) {
-      clearMulti();
-      currentEditable = pendingFocusCell;
-      placeCursorAt(pendingFocusCell, pendingFocusPoint.x, pendingFocusPoint.y);
-      positionToolbar();
     }
     dragStartCell = null; dragInitialPos = null; dragActive = false;
-    pendingFocusCell = null; pendingFocusPoint = null;
   });
 
   document.addEventListener('selectstart', (e) => { if (dragActive) e.preventDefault(); });
@@ -1615,7 +1574,13 @@
     }
   }
 
-  // 점수 셀 → mousedown 핸들러에서 처리됨
+  // 점수 셀 클릭 → 픽커
+  document.addEventListener('click', (e) => {
+    const cell = e.target.closest && e.target.closest('.score-cell.editable');
+    if (!cell) return;
+    e.preventDefault();
+    showScorePicker(cell);
+  });
 
   // 외부 클릭 / Esc / 숫자 키
   document.addEventListener('mousedown', (e) => {
