@@ -813,20 +813,20 @@
     currentColorKind = null;
   }
   function applyColor(kind, color) {
-    if (!currentEditable) return;
-    currentEditable.focus();
-    document.execCommand('styleWithCSS', false, true);
-    const cmd = kind === 'fore' ? 'foreColor' : (color === 'transparent' ? 'hiliteColor' : 'hiliteColor');
-    if (kind === 'back' && color === 'transparent') {
-      document.execCommand('hiliteColor', false, 'transparent');
-    } else {
-      document.execCommand(cmd, false, color);
+    const cmd = kind === 'fore' ? 'foreColor' : 'hiliteColor';
+    const finalColor = (kind === 'back' && color === 'transparent') ? 'transparent' : color;
+    // 다중 선택 우선
+    if (!applyCmdToMulti(cmd, finalColor)) {
+      if (!currentEditable) return;
+      currentEditable.focus();
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand(cmd, false, finalColor);
+      triggerSaveFromToolbar();
     }
     // 툴바 색 표시 갱신
     const wrap = toolbar.querySelector(`.color-wrap[data-kind="${kind}"] .color-bar`);
     if (wrap) wrap.style.background = color === 'transparent' ? 'repeating-linear-gradient(45deg,#ccc,#ccc 2px,#fff 2px,#fff 4px)' : color;
     closeColorPop();
-    triggerSaveFromToolbar();
   }
 
   // 컬러 버튼 핸들러
@@ -855,6 +855,9 @@
 
   // 크기 드롭다운
   toolbar.querySelector('.size-select').addEventListener('change', (e) => {
+    const sizePx = e.target.value;
+    // 다중 선택 우선
+    if (applySizeToMulti(sizePx)) return;
     if (!currentEditable) return;
     currentEditable.focus();
     const sel = window.getSelection();
@@ -866,7 +869,7 @@
     }
     const range = sel.getRangeAt(0);
     const span = document.createElement('span');
-    span.style.fontSize = e.target.value + 'px';
+    span.style.fontSize = sizePx + 'px';
     try {
       span.appendChild(range.extractContents());
       range.insertNode(span);
@@ -980,8 +983,11 @@
     const action = btn.dataset.action;
 
     if (cmd) {
-      document.execCommand('styleWithCSS', false, true);
-      document.execCommand(cmd, false, null);
+      // 다중 선택 우선
+      if (!applyCmdToMulti(cmd, null)) {
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand(cmd, false, null);
+      }
     } else if (action === 'link') {
       const url = prompt('링크 URL 입력 (https:// 포함):', 'https://');
       if (url && url.trim() && url.trim() !== 'https://') {
@@ -1162,6 +1168,154 @@
     });
 
     return body.innerHTML;
+  }
+
+  // ---------- 다중 셀 선택 (드래그 / Ctrl+클릭 / Shift+클릭) ----------
+  const multiSelected = new Set();
+  let dragStartCell = null;
+  let dragInitialPos = null;
+  let dragActive = false;
+  let lastClickedCell = null;
+
+  function addToMulti(cell) {
+    if (!cell || cell.classList.contains('score-cell')) return; // 점수 셀은 픽커 사용
+    multiSelected.add(cell);
+    cell.classList.add('multi-selected');
+  }
+  function clearMulti() {
+    multiSelected.forEach(c => c.classList.remove('multi-selected'));
+    multiSelected.clear();
+  }
+  function selectCellRange(from, to) {
+    clearMulti();
+    const sec = from.closest('[data-page-content]');
+    if (!sec) return;
+    const all = Array.from(sec.querySelectorAll('.editable'));
+    const i1 = all.indexOf(from), i2 = all.indexOf(to);
+    if (i1 < 0 || i2 < 0) return;
+    const [lo, hi] = [Math.min(i1, i2), Math.max(i1, i2)];
+    for (let i = lo; i <= hi; i++) addToMulti(all[i]);
+  }
+
+  document.addEventListener('mousedown', (e) => {
+    const cell = e.target.closest && e.target.closest('.editable');
+    if (!cell) {
+      if (!toolbar.contains(e.target) && !document.getElementById('color-popover')?.contains(e.target) && !document.getElementById('score-picker')?.contains(e.target)) {
+        clearMulti();
+      }
+      return;
+    }
+    // 점수 셀은 픽커가 처리 - 멀티셀렉트 스킵
+    if (cell.classList.contains('score-cell')) {
+      clearMulti();
+      return;
+    }
+    if (e.shiftKey && lastClickedCell) {
+      e.preventDefault();
+      selectCellRange(lastClickedCell, cell);
+      currentEditable = cell;
+      positionToolbar();
+      return;
+    }
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      if (multiSelected.has(cell)) {
+        cell.classList.remove('multi-selected');
+        multiSelected.delete(cell);
+      } else {
+        addToMulti(cell);
+      }
+      currentEditable = cell;
+      positionToolbar();
+      return;
+    }
+    lastClickedCell = cell;
+    dragStartCell = cell;
+    dragInitialPos = { x: e.clientX, y: e.clientY };
+    dragActive = false;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragStartCell || !dragInitialPos) return;
+    const dx = Math.abs(e.clientX - dragInitialPos.x);
+    const dy = Math.abs(e.clientY - dragInitialPos.y);
+    if (!dragActive && (dx > 8 || dy > 8)) {
+      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
+      if (overCell && overCell !== dragStartCell) {
+        dragActive = true;
+        clearMulti();
+        // 브라우저 텍스트 selection 해제
+        window.getSelection()?.removeAllRanges();
+        document.body.style.userSelect = 'none';
+      }
+    }
+    if (dragActive) {
+      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
+      if (overCell && !overCell.classList.contains('score-cell')) {
+        selectCellRange(dragStartCell, overCell);
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (dragActive) {
+      document.body.style.userSelect = '';
+      // 툴바 띄움
+      if (multiSelected.size > 0) {
+        currentEditable = dragStartCell;
+        positionToolbar();
+      }
+    }
+    dragStartCell = null;
+    dragInitialPos = null;
+    dragActive = false;
+  });
+
+  // 다중 셀에 명령 적용 - 셀별 selectAll + execCommand
+  function applyCmdToMulti(cmd, value, useCSS = true) {
+    if (multiSelected.size === 0) return false;
+    multiSelected.forEach(cell => {
+      cell.focus();
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      if (useCSS) document.execCommand('styleWithCSS', false, true);
+      document.execCommand(cmd, false, value);
+      const id = cell.getAttribute('data-cell-id');
+      const scope = cell.getAttribute('data-cell-scope');
+      const list = cellMap.get(id);
+      const sectionId = list?.[0]?.sectionId;
+      saveOne(scope, id, cell.innerHTML, sectionId);
+      propagate(id, cell.innerHTML, cell);
+    });
+    return true;
+  }
+  // 다중 셀에 폰트 크기 적용
+  function applySizeToMulti(sizePx) {
+    if (multiSelected.size === 0) return false;
+    multiSelected.forEach(cell => {
+      cell.focus();
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      const span = document.createElement('span');
+      span.style.fontSize = sizePx + 'px';
+      try {
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+      } catch (e) {}
+      const id = cell.getAttribute('data-cell-id');
+      const scope = cell.getAttribute('data-cell-scope');
+      const list = cellMap.get(id);
+      const sectionId = list?.[0]?.sectionId;
+      saveOne(scope, id, cell.innerHTML, sectionId);
+      propagate(id, cell.innerHTML, cell);
+    });
+    return true;
   }
 
   // ---------- 점수 픽커 (1~5 큰 버튼 모달) ----------

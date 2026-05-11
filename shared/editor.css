@@ -49,6 +49,18 @@ body { padding: 0 12px 24px !important; }
   background: #ffe2e2 !important;
 }
 
+/* 다중 셀 선택 */
+.editable.multi-selected {
+  outline: 2px solid #1a3a6c !important;
+  outline-offset: -1px;
+  background: rgba(26, 58, 108, 0.08) !important;
+  position: relative;
+  z-index: 1;
+}
+.editable.multi-selected:hover {
+  background: rgba(26, 58, 108, 0.12) !important;
+}
+
 /* 우상단 버튼들 */
 #export-btn, #copy-btn {
   position: fixed;
