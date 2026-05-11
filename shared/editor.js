@@ -21,6 +21,22 @@
   const cellMap = new Map();
   const sectionInfos = new Map();
 
+  // 사용자 식별 (첫 방문 시 이름 받기)
+  function getUserName() {
+    let name = localStorage.getItem('cj-lmd-user');
+    if (!name) {
+      name = prompt('이름을 입력해주세요 (셀 수정 이력에 표시됩니다):', '');
+      if (name && name.trim()) {
+        name = name.trim().slice(0, 20);
+        localStorage.setItem('cj-lmd-user', name);
+      } else {
+        name = '익명';
+      }
+    }
+    return name;
+  }
+  const USER_NAME = getUserName();
+
   // ---------- utils ----------
   function readStorage(key) {
     try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; }
@@ -53,7 +69,13 @@
     const key = scope === 'shared' ? SHARED_KEY : `cj-lmd-${sectionId}`;
     const data = readStorage(key);
     data[id] = value;
+    // 메타 (수정자·수정시각) - 같은 key 안에 __meta로 박음
+    if (!data.__meta) data.__meta = {};
+    const meta = { by: USER_NAME, at: Date.now() };
+    data.__meta[id] = meta;
     writeStorage(key, data);
+    // DOM 메타 갱신
+    updateCellAttribution(id, meta);
     showSaveIndicator('저장중');
 
     if (useApi) {
@@ -61,7 +83,7 @@
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({scope, sectionId, cellId: id, value})
+          body: JSON.stringify({scope, sectionId, cellId: id, value, by: USER_NAME, at: meta.at})
         });
         if (res.ok) {
           showSaveIndicator('저장됨');
@@ -74,6 +96,29 @@
     } else {
       showSaveIndicator('로컬 저장');
     }
+  }
+
+  // 셀에 수정자 메타 적용 (title 툴팁 + data 속성)
+  function updateCellAttribution(id, meta) {
+    if (!meta) return;
+    const list = cellMap.get(id);
+    if (!list) return;
+    const text = `${meta.by} · ${formatRelativeTime(meta.at)}`;
+    list.forEach(({el}) => {
+      el.setAttribute('data-edited-by', meta.by);
+      el.setAttribute('data-edited-at', meta.at);
+      el.setAttribute('title', `마지막 수정: ${text}`);
+    });
+  }
+
+  function formatRelativeTime(ts) {
+    if (!ts) return '';
+    const diff = (Date.now() - ts) / 1000;
+    if (diff < 60) return '방금';
+    if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
   // ---------- register ----------
@@ -199,6 +244,9 @@
           }
         });
       }
+      // 메타 적용
+      const meta = data.__meta && data.__meta[id];
+      if (meta) updateCellAttribution(id, meta);
     });
   }
 
@@ -275,6 +323,8 @@
           }
         });
       }
+      const meta = data.__meta && data.__meta[id];
+      if (meta) updateCellAttribution(id, meta);
     });
   }
 
@@ -426,17 +476,19 @@
   let currentEditable = null;
 
   // 셀에 mousedown/focus 들어오면 currentEditable 갱신
+  // - .editable 요소뿐 아니라 그 자식 (insight-box 안의 strong, label 등) 클릭도 인식
   document.addEventListener('focusin', (e) => {
-    if (e.target.classList && e.target.classList.contains('editable')) {
-      currentEditable = e.target;
+    const editable = e.target.closest && e.target.closest('.editable');
+    if (editable) {
+      currentEditable = editable;
       positionToolbar();
     }
   });
 
-  // 셀 밖 클릭 시 툴바 숨김
+  // 셀 밖 클릭 시 툴바 숨김 (closest로 자식 클릭도 허용)
   document.addEventListener('mousedown', (e) => {
-    if (toolbar.contains(e.target)) return; // 툴바 내부 클릭은 유지
-    if (e.target.classList && e.target.classList.contains('editable')) return;
+    if (toolbar.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('.editable')) return;
     hideToolbar();
     currentEditable = null;
   });

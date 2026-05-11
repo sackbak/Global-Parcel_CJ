@@ -51,17 +51,22 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { scope, sectionId, cellId, value } = body || {};
+      const { scope, sectionId, cellId, value, by, at } = body || {};
       if (!scope || !cellId) {
         return res.status(400).json({ error: 'missing scope or cellId' });
       }
-      // 셀 값 길이 제한 (한 셀에 100KB 이상 못 박게 = 악용 방지)
       if (typeof value === 'string' && value.length > 100000) {
         return res.status(413).json({ error: 'value too large' });
       }
       const key = scope === 'shared' ? 'shared' : `page:${sectionId}`;
       const current = (await kv.get(key)) || {};
       current[cellId] = value;
+      // 메타 (수정자·수정시각)
+      if (by) {
+        if (!current.__meta) current.__meta = {};
+        const byClean = String(by).slice(0, 20);
+        current.__meta[cellId] = { by: byClean, at: at || Date.now() };
+      }
       await kv.set(key, current);
       return res.status(200).json({ ok: true });
     }
