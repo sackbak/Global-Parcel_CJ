@@ -536,58 +536,68 @@
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
   });
 
-  // ---------- 표 복사 버튼 (현재 탭 표를 클립보드로) ----------
+  // ---------- 전체 복사 버튼 (현재 탭 통째로 클립보드로) ----------
   const copyBtn = document.createElement('button');
   copyBtn.id = 'copy-btn';
   copyBtn.type = 'button';
-  copyBtn.textContent = '표 복사';
-  copyBtn.title = '현재 탭의 표를 클립보드로 복사 (엑셀에 바로 붙여넣기 가능)';
+  copyBtn.textContent = '전체 복사';
+  copyBtn.title = '현재 탭 전체 내용을 클립보드로 (Excel/Word에 붙이면 표·텍스트 그대로)';
   document.body.appendChild(copyBtn);
 
   copyBtn.addEventListener('click', async () => {
     const activeSec = document.querySelector('[data-page-content].active');
     if (!activeSec) return;
-    const table = activeSec.querySelector('.self-table, .comp-table');
-    if (!table) {
-      copyBtn.textContent = '표 없음';
-      setTimeout(() => copyBtn.textContent = '표 복사', 1200);
-      return;
-    }
-    // TSV (Excel/Sheets 기본)
-    const rows = [];
-    table.querySelectorAll('tr').forEach(tr => {
-      const cells = [];
-      tr.querySelectorAll('th, td').forEach(td => {
-        let txt = td.textContent.trim().replace(/\s+/g, ' ');
-        // 탭/줄바꿈 문자 들어가면 셀 분리 깨지니 공백으로
-        txt = txt.replace(/[\t\n\r]/g, ' ');
-        cells.push(txt);
-      });
-      rows.push(cells.join('\t'));
-    });
-    const tsv = rows.join('\n');
-    // HTML도 같이 (서식 유지 위해)
-    const tableHtml = '<meta charset="utf-8">' + table.outerHTML;
+
+    // HTML (서식·표 구조 유지). meta charset 박아서 한글 깨짐 방지
+    const html = '<meta charset="utf-8">' + activeSec.innerHTML;
+
+    // Plain text 폴백 - 표는 TSV, 나머지는 줄바꿈으로
+    const textParts = [];
+    activeSec.childNodes.forEach(node => textParts.push(nodeToText(node)));
+    const plain = textParts.filter(s => s.trim()).join('\n\n');
+
     try {
-      if (navigator.clipboard && navigator.clipboard.write) {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
         await navigator.clipboard.write([
           new ClipboardItem({
-            'text/plain': new Blob([tsv], {type: 'text/plain'}),
-            'text/html': new Blob([tableHtml], {type: 'text/html'})
+            'text/plain': new Blob([plain], {type: 'text/plain'}),
+            'text/html': new Blob([html], {type: 'text/html'})
           })
         ]);
       } else {
-        // 폴백
-        await navigator.clipboard.writeText(tsv);
+        await navigator.clipboard.writeText(plain);
       }
       copyBtn.textContent = '복사됨';
-      setTimeout(() => copyBtn.textContent = '표 복사', 1500);
+      setTimeout(() => copyBtn.textContent = '전체 복사', 1500);
     } catch (e) {
       console.error('Clipboard failed', e);
       copyBtn.textContent = '실패';
-      setTimeout(() => copyBtn.textContent = '표 복사', 1500);
+      setTimeout(() => copyBtn.textContent = '전체 복사', 1800);
     }
   });
+
+  // DOM 노드를 텍스트로 (표는 TSV로)
+  function nodeToText(node) {
+    if (node.nodeType === 3) return node.textContent.replace(/\s+/g, ' ');
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE') return '';
+    if (tag === 'TABLE') {
+      const rows = [];
+      node.querySelectorAll('tr').forEach(tr => {
+        const cells = [];
+        tr.querySelectorAll('th, td').forEach(td => {
+          cells.push(td.textContent.trim().replace(/[\t\n\r]+/g, ' ').replace(/\s+/g, ' '));
+        });
+        rows.push(cells.join('\t'));
+      });
+      return rows.join('\n');
+    }
+    // 일반 텍스트 컨테이너
+    const parts = [];
+    node.childNodes.forEach(c => parts.push(nodeToText(c)));
+    return parts.join(' ').replace(/\s+/g, ' ').trim();
+  }
 
   // ---------- 엑셀 다운로드 버튼 ----------
   const exportBtn = document.createElement('button');

@@ -1,6 +1,32 @@
 /* CJ LMD Report - Editable Cell Visuals
    화면에서만 편집 영역 표시. 인쇄 시에는 깨끗하게 출력됨. */
 
+/* 탭 네비 우측에 버튼 자리 확보 */
+.tab-nav { padding-right: 260px !important; }
+
+/* 페이지 폭/높이 강제 제한 해제 - 화면 폭에 맞춰 꽉 채움 */
+.page, .overview-page {
+  width: auto !important;
+  max-width: 1500px !important;
+  min-height: auto !important;
+  padding: 16px 20px !important;
+  font-size: 11px !important;
+}
+body { padding: 0 12px 24px !important; }
+
+/* 표 폭 조정 - 넓어진 화면에서 칸이 너무 좁아지지 않게 */
+.self-table, .comp-table {
+  font-size: 10px !important;
+}
+.self-table td, .comp-table td,
+.self-table th, .comp-table th {
+  padding: 6px 8px !important;
+  line-height: 1.5 !important;
+}
+.indicator-name { font-size: 10.5px !important; }
+.indicator-sub { font-size: 9px !important; }
+.content-cell, .cj-cell, .comp-table td.left { font-size: 10px !important; }
+
 .editable {
   outline: none;
   border-radius: 2px;
