@@ -442,8 +442,9 @@
     activateTab('korea');
   }
 
-  // ---------- 초기화 단축키 ----------
+  // ---------- 초기화 단축키 + 서식 단축키 + Tab 네비 ----------
   document.addEventListener('keydown', (e) => {
+    // 1) 초기화: Ctrl+Shift+R
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'r') {
       const active = tabs.find(t => t.classList.contains('active'))?.dataset.tab;
       if (!active) return;
@@ -451,8 +452,178 @@
         localStorage.removeItem(`cj-lmd-${active}`);
         location.reload();
       }
+      return;
+    }
+
+    // 셀 포커스 안 잡혀있으면 종료
+    if (!currentEditable) return;
+
+    // 2) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+      const k = e.key.toLowerCase();
+      if (k === 'b' || k === 'i' || k === 'u') {
+        e.preventDefault();
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand(k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline');
+        triggerSaveFromToolbar();
+        return;
+      }
+      // 3) 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
+      if (e.key === '+' || e.key === '=' ) {
+        e.preventDefault();
+        adjustFontSize(1);
+        triggerSaveFromToolbar();
+        updateSizeLabel();
+        return;
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        adjustFontSize(-1);
+        triggerSaveFromToolbar();
+        updateSizeLabel();
+        return;
+      }
+    }
+
+    // 4) Tab / Shift+Tab — 활성 탭의 다음/이전 셀로 이동 (엑셀스러움)
+    if (e.key === 'Tab' && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      const activeTab = document.querySelector('[data-page-content].active');
+      if (!activeTab) return;
+      const all = Array.from(activeTab.querySelectorAll('.editable'));
+      const idx = all.indexOf(currentEditable);
+      if (idx === -1) return;
+      const next = e.shiftKey ? all[idx - 1] : all[idx + 1];
+      if (next) {
+        next.focus();
+        // 다음 셀 내용 전체 선택 (엑셀 셀 진입 동작)
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(next);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     }
   });
+
+  // 모든 .editable 에 tabindex 부여 → Tab 키 네비게이션 가능
+  document.querySelectorAll('.editable').forEach(el => {
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  });
+
+  // ---------- 엑셀 다운로드 버튼 ----------
+  const exportBtn = document.createElement('button');
+  exportBtn.id = 'export-btn';
+  exportBtn.type = 'button';
+  exportBtn.textContent = '엑셀 다운로드';
+  exportBtn.title = '현재 모든 탭의 데이터를 .xlsx로 내려받기';
+  document.body.appendChild(exportBtn);
+
+  exportBtn.addEventListener('click', async () => {
+    exportBtn.disabled = true;
+    exportBtn.textContent = '준비 중…';
+    try {
+      // SheetJS를 CDN에서 동적 로드
+      if (!window.XLSX) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const wb = window.XLSX.utils.book_new();
+
+      sections.forEach(section => {
+        const sectionId = section.dataset.pageContent;
+        const sheetName = sectionId.slice(0, 31);
+        const aoa = extractSectionToRows(section);
+        const ws = window.XLSX.utils.aoa_to_sheet(aoa);
+        // 컬럼 너비 자동
+        const colWidths = aoa[0]?.map((_, i) => ({
+          wch: Math.min(60, Math.max(8, Math.max(...aoa.map(r => String(r[i] || '').length))))
+        })) || [];
+        ws['!cols'] = colWidths;
+        window.XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+
+      const today = new Date();
+      const fname = `CJ_LMD_Report_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.xlsx`;
+      window.XLSX.writeFile(wb, fname);
+      exportBtn.textContent = '다운로드 완료';
+      setTimeout(() => { exportBtn.textContent = '엑셀 다운로드'; exportBtn.disabled = false; }, 1500);
+    } catch (e) {
+      console.error('Export failed', e);
+      exportBtn.textContent = '실패 - 재시도';
+      exportBtn.disabled = false;
+    }
+  });
+
+  // 섹션 → 2차원 배열 (엑셀 시트용)
+  function extractSectionToRows(section) {
+    const rows = [];
+    const title = section.querySelector('.title')?.textContent.trim() || section.dataset.pageContent;
+    rows.push([title]);
+    rows.push([]);
+
+    // stat cards
+    const stats = section.querySelectorAll('.stat-card');
+    if (stats.length) {
+      const labels = []; const values = [];
+      stats.forEach(c => {
+        labels.push(c.querySelector('.label')?.textContent.trim() || '');
+        values.push(c.querySelector('.value')?.textContent.trim() || '');
+      });
+      rows.push(labels);
+      rows.push(values);
+      rows.push([]);
+    }
+
+    // 인사이트 개요
+    const overview = section.querySelector('.insight-box:not(.summary)');
+    if (overview) {
+      const label = overview.querySelector('.label')?.textContent.trim() || '개요';
+      const text = overview.textContent.replace(overview.querySelector('.label')?.textContent || '', '').trim();
+      rows.push([label, text]);
+      rows.push([]);
+    }
+
+    // 표
+    const table = section.querySelector('.self-table, .comp-table');
+    if (table) {
+      const headerRow = [];
+      table.querySelectorAll('thead th').forEach(th => headerRow.push(th.textContent.trim().replace(/\s+/g,' ')));
+      rows.push(headerRow);
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const r = [];
+        tr.querySelectorAll('td').forEach(td => {
+          r.push(td.textContent.trim().replace(/\s+/g, ' '));
+        });
+        rows.push(r);
+      });
+      rows.push([]);
+    }
+
+    // 시사점
+    const summary = section.querySelector('.insight-box.summary');
+    if (summary) {
+      const label = summary.querySelector('.label')?.textContent.trim() || '시사점';
+      const text = summary.textContent.replace(summary.querySelector('.label')?.textContent || '', '').trim();
+      rows.push([label]);
+      rows.push([text]);
+      rows.push([]);
+    }
+
+    // 출처
+    const source = section.querySelector('.source-note');
+    if (source) {
+      rows.push(['출처']);
+      rows.push([source.textContent.trim()]);
+    }
+
+    return rows;
+  }
 
   // ---------- 서식 툴바 (Bold / Italic / Underline / 크기 / 색상) ----------
   const SIZE_PRESETS = [9, 10, 11, 12, 14, 16, 18, 22];
@@ -577,11 +748,18 @@
 
   function adjustFontSize(delta) {
     if (!currentEditable) return;
-    currentEditable.focus();
+    // 포커스가 이미 셀에 없으면 셀로 옮김
+    if (document.activeElement !== currentEditable) currentEditable.focus();
     const sel = window.getSelection();
     if (!sel) return;
-    // 선택영역 없으면 셀 전체 선택
-    if (sel.rangeCount === 0 || sel.isCollapsed) {
+    // 셀 안에 selection이 있는지 확인
+    let hasSelectionInCell = false;
+    if (sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      hasSelectionInCell = currentEditable.contains(r.commonAncestorContainer);
+    }
+    // 셀 안에 selection이 없거나 collapsed면 셀 전체 선택
+    if (!hasSelectionInCell || sel.isCollapsed) {
       const range = document.createRange();
       range.selectNodeContents(currentEditable);
       sel.removeAllRanges();
