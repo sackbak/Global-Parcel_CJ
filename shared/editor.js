@@ -718,22 +718,165 @@
   const toolbar = document.createElement('div');
   toolbar.id = 'format-toolbar';
   toolbar.innerHTML =
-    '<button type="button" data-cmd="bold" title="굵게 (Ctrl+B)">B</button>' +
-    '<button type="button" data-cmd="italic" title="기울임 (Ctrl+I)">I</button>' +
-    '<button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)">U</button>' +
+    // 굵게/기울임/밑줄/취소선
+    '<button type="button" data-cmd="bold" title="굵게 (Ctrl+B)"><b>B</b></button>' +
+    '<button type="button" data-cmd="italic" title="기울임 (Ctrl+I)"><i>I</i></button>' +
+    '<button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>' +
+    '<button type="button" data-cmd="strikeThrough" title="취소선"><s>S</s></button>' +
     '<span class="sep"></span>' +
-    '<button type="button" data-cmd="justifyLeft" title="왼쪽 정렬">⫷</button>' +
-    '<button type="button" data-cmd="justifyCenter" title="가운데 정렬">≡</button>' +
-    '<button type="button" data-cmd="justifyRight" title="오른쪽 정렬">⫸</button>' +
+    // 폰트 크기 드롭다운
+    '<select class="size-select" title="글자 크기">' +
+      [9,10,11,12,14,16,18,22,28].map(s => `<option value="${s}">${s}</option>`).join('') +
+    '</select>' +
     '<span class="sep"></span>' +
-    '<button type="button" data-action="size-down" title="작게">A−</button>' +
-    '<span class="size-label" id="size-label">−</span>' +
-    '<button type="button" data-action="size-up" title="크게">A+</button>' +
+    // 글자 색 / 형광펜
+    '<div class="color-wrap" data-kind="fore"><button type="button" class="color-btn" title="글자 색"><span class="color-letter">A</span><span class="color-bar" style="background:#1a3a6c"></span></button><button type="button" class="color-arrow" title="색 선택">▾</button></div>' +
+    '<div class="color-wrap" data-kind="back"><button type="button" class="color-btn" title="형광펜"><span class="color-letter">▱</span><span class="color-bar" style="background:#fff59d"></span></button><button type="button" class="color-arrow" title="색 선택">▾</button></div>' +
     '<span class="sep"></span>' +
-    '<input type="color" data-cmd="foreColor" value="#1a3a6c" title="글자 색">' +
+    // 정렬
+    '<button type="button" data-cmd="justifyLeft" title="왼쪽 (Ctrl+L)">⫷</button>' +
+    '<button type="button" data-cmd="justifyCenter" title="가운데 (Ctrl+E)">≡</button>' +
+    '<button type="button" data-cmd="justifyRight" title="오른쪽">⫸</button>' +
+    '<span class="sep"></span>' +
+    // 목록 / 들여쓰기
+    '<button type="button" data-cmd="insertUnorderedList" title="글머리 기호">• ≡</button>' +
+    '<button type="button" data-cmd="insertOrderedList" title="번호 목록">1. ≡</button>' +
+    '<button type="button" data-cmd="outdent" title="내어쓰기">⇤</button>' +
+    '<button type="button" data-cmd="indent" title="들여쓰기">⇥</button>' +
+    '<span class="sep"></span>' +
+    // 링크
+    '<button type="button" data-action="link" title="하이퍼링크">🔗</button>' +
+    '<span class="sep"></span>' +
+    // 서식 제거 / 원본 복원
     '<button type="button" data-cmd="removeFormat" title="서식 제거">↺</button>' +
-    '<span class="sep"></span>' +
-    '<button type="button" data-action="reset-cell" title="이 셀을 원본으로 되돌리기">⤺ 원본</button>';
+    '<button type="button" data-action="reset-cell" title="원본으로">⤺</button>';
+
+  // 컬러 팔레트 - Office 비슷한 구성
+  const COLOR_PALETTE = [
+    ['#000000','#262626','#595959','#7f7f7f','#a6a6a6','#bfbfbf','#d9d9d9','#ffffff'],
+    ['#1a3a6c','#c89c4c','#0070c0','#00b050','#7030a0','#806000','#ff0000','#ffc000'],
+    ['#d9e2f3','#fbe5d6','#deebf7','#e2efda','#ead1dc','#fff2cc','#fce4d6','#ddd9c4']
+  ];
+  const HIGHLIGHT_PALETTE = [
+    ['#fff59d','#ffe082','#a5d6a7','#80cbc4','#90caf9','#ce93d8','#f48fb1','#ffab91'],
+    ['#ffffff','#f5f5f5','#e0e0e0','#bdbdbd'],
+  ];
+
+  // 색 팔레트 popover
+  const colorPop = document.createElement('div');
+  colorPop.id = 'color-popover';
+  colorPop.style.display = 'none';
+  document.body.appendChild(colorPop);
+
+  function buildPalette(kind) {
+    const palette = kind === 'fore' ? COLOR_PALETTE : HIGHLIGHT_PALETTE;
+    let html = `<div class="cp-title">${kind === 'fore' ? '글자 색' : '배경(형광펜) 색'}</div><div class="cp-grid">`;
+    palette.forEach(row => {
+      row.forEach(c => {
+        html += `<button type="button" class="cp-swatch" data-color="${c}" style="background:${c}" title="${c}"></button>`;
+      });
+    });
+    html += '</div>';
+    // 사용자 정의 색상
+    html += '<div class="cp-custom"><input type="color" value="#1a3a6c"><span>사용자 정의</span></div>';
+    // 색 없음 (배경만)
+    if (kind === 'back') {
+      html += '<div class="cp-none-row"><button type="button" class="cp-none" data-color="transparent">색 없음</button></div>';
+    } else {
+      html += '<div class="cp-none-row"><button type="button" class="cp-none" data-color="#222222">기본 (검정)</button></div>';
+    }
+    return html;
+  }
+
+  let currentColorKind = null;
+  function openColorPop(kind, anchorBtn) {
+    currentColorKind = kind;
+    colorPop.innerHTML = buildPalette(kind);
+    colorPop.style.display = 'block';
+    const r = anchorBtn.getBoundingClientRect();
+    let top = r.bottom + 6;
+    let left = r.left;
+    // 화면 밖 방지
+    if (left + 220 > window.innerWidth - 8) left = window.innerWidth - 228;
+    if (top + 200 > window.innerHeight - 8) top = r.top - 200 - 6;
+    colorPop.style.top = top + 'px';
+    colorPop.style.left = Math.max(8, left) + 'px';
+    // 핸들러
+    colorPop.querySelectorAll('.cp-swatch, .cp-none').forEach(b => {
+      b.addEventListener('click', () => applyColor(kind, b.dataset.color));
+    });
+    const customInput = colorPop.querySelector('input[type="color"]');
+    if (customInput) customInput.addEventListener('input', () => applyColor(kind, customInput.value));
+  }
+  function closeColorPop() {
+    colorPop.style.display = 'none';
+    currentColorKind = null;
+  }
+  function applyColor(kind, color) {
+    if (!currentEditable) return;
+    currentEditable.focus();
+    document.execCommand('styleWithCSS', false, true);
+    const cmd = kind === 'fore' ? 'foreColor' : (color === 'transparent' ? 'hiliteColor' : 'hiliteColor');
+    if (kind === 'back' && color === 'transparent') {
+      document.execCommand('hiliteColor', false, 'transparent');
+    } else {
+      document.execCommand(cmd, false, color);
+    }
+    // 툴바 색 표시 갱신
+    const wrap = toolbar.querySelector(`.color-wrap[data-kind="${kind}"] .color-bar`);
+    if (wrap) wrap.style.background = color === 'transparent' ? 'repeating-linear-gradient(45deg,#ccc,#ccc 2px,#fff 2px,#fff 4px)' : color;
+    closeColorPop();
+    triggerSaveFromToolbar();
+  }
+
+  // 컬러 버튼 핸들러
+  toolbar.querySelectorAll('.color-wrap').forEach(wrap => {
+    const kind = wrap.dataset.kind;
+    // 본 버튼 = 현재 색상 즉시 적용
+    wrap.querySelector('.color-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const c = wrap.querySelector('.color-bar').style.background;
+      applyColor(kind, c || (kind === 'fore' ? '#1a3a6c' : '#fff59d'));
+    });
+    // ▾ = 팔레트 열기
+    wrap.querySelector('.color-arrow').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openColorPop(kind, wrap);
+    });
+  });
+
+  // 팔레트 외부 클릭 시 닫기
+  document.addEventListener('mousedown', (e) => {
+    if (colorPop.style.display !== 'block') return;
+    if (colorPop.contains(e.target)) return;
+    if (e.target.closest('.color-wrap')) return;
+    closeColorPop();
+  });
+
+  // 크기 드롭다운
+  toolbar.querySelector('.size-select').addEventListener('change', (e) => {
+    if (!currentEditable) return;
+    currentEditable.focus();
+    const sel = window.getSelection();
+    if (sel.rangeCount === 0 || sel.isCollapsed) {
+      const range = document.createRange();
+      range.selectNodeContents(currentEditable);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    const range = sel.getRangeAt(0);
+    const span = document.createElement('span');
+    span.style.fontSize = e.target.value + 'px';
+    try {
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+      sel.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      sel.addRange(newRange);
+    } catch (err) {}
+    triggerSaveFromToolbar();
+  });
   document.body.appendChild(toolbar);
 
   let currentEditable = null;
@@ -808,10 +951,18 @@
   }
 
   function updateSizeLabel() {
-    const label = toolbar.querySelector('#size-label');
-    if (!label || !currentEditable) return;
-    const sz = parseFloat(window.getComputedStyle(currentEditable).fontSize);
-    label.textContent = isNaN(sz) ? '−' : Math.round(sz) + 'px';
+    if (!currentEditable) return;
+    const sizeSelect = toolbar.querySelector('.size-select');
+    if (sizeSelect) {
+      const sz = Math.round(parseFloat(window.getComputedStyle(currentEditable).fontSize));
+      // 가장 가까운 옵션 선택
+      let closest = null, minDiff = Infinity;
+      Array.from(sizeSelect.options).forEach(o => {
+        const d = Math.abs(parseInt(o.value) - sz);
+        if (d < minDiff) { minDiff = d; closest = o.value; }
+      });
+      if (closest) sizeSelect.value = closest;
+    }
   }
 
   // 툴바 클릭 시 셀 포커스 유지
@@ -831,13 +982,15 @@
     if (cmd) {
       document.execCommand('styleWithCSS', false, true);
       document.execCommand(cmd, false, null);
-    } else if (action === 'size-up' || action === 'size-down') {
-      adjustFontSize(action === 'size-up' ? 1 : -1);
+    } else if (action === 'link') {
+      const url = prompt('링크 URL 입력 (https:// 포함):', 'https://');
+      if (url && url.trim() && url.trim() !== 'https://') {
+        document.execCommand('createLink', false, url.trim());
+      }
     } else if (action === 'reset-cell') {
       const original = currentEditable.dataset.originalHtml;
       if (original !== undefined && confirm('이 셀을 원본으로 되돌리시겠습니까? (저장된 수정 내용 사라집니다)')) {
         currentEditable.innerHTML = original;
-        // score 셀이면 색깔 재적용
         if (currentEditable.classList.contains('score-cell')) {
           validateAndRenderScore(currentEditable);
           recalcAllHexagons();

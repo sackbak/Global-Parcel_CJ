@@ -103,20 +103,20 @@ body { padding: 0 12px 24px !important; }
   transform: translateY(0);
 }
 
-/* 서식 툴바 */
+/* 서식 툴바 (Office 톤) */
 #format-toolbar {
   position: fixed;
   display: none;
   align-items: center;
-  gap: 2px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 4px 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  gap: 1px;
+  background: linear-gradient(to bottom, #fafafa, #f0f0ed);
+  border: 1px solid #c8c8c0;
+  border-radius: 4px;
+  padding: 4px 5px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14), 0 2px 4px rgba(0,0,0,0.06);
   z-index: 9998;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   user-select: none;
 }
 #format-toolbar.visible { display: flex; }
@@ -124,41 +124,165 @@ body { padding: 0 12px 24px !important; }
   background: transparent;
   border: 1px solid transparent;
   border-radius: 3px;
-  padding: 4px 8px;
+  padding: 3px 7px;
   cursor: pointer;
   font-family: inherit;
-  font-size: 12px;
-  color: #333;
+  font-size: 13px;
+  color: #222;
   min-width: 26px;
-  transition: background 0.1s;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s, border-color 0.08s;
+  line-height: 1;
 }
-#format-toolbar button:hover { background: #f0f0ee; }
-#format-toolbar button:active { background: #e0e0d8; }
-#format-toolbar button[data-cmd="bold"] { font-weight: 700; }
-#format-toolbar button[data-cmd="italic"] { font-style: italic; }
-#format-toolbar button[data-cmd="underline"] { text-decoration: underline; }
+#format-toolbar button:hover {
+  background: #fff;
+  border-color: #b0b0a8;
+}
+#format-toolbar button:active {
+  background: #e8e8e0;
+  border-color: #888;
+}
+#format-toolbar button > b,
+#format-toolbar button > i,
+#format-toolbar button > u,
+#format-toolbar button > s {
+  font-size: 13.5px;
+  line-height: 1;
+  font-weight: 700;
+}
+#format-toolbar button > i { font-weight: 500; }
 #format-toolbar .sep {
   width: 1px;
-  height: 18px;
-  background: #ddd;
-  margin: 0 4px;
+  height: 20px;
+  background: #c8c8c0;
+  margin: 0 5px;
 }
-#format-toolbar input[type="color"] {
+#format-toolbar .size-select {
+  height: 26px;
+  border: 1px solid #c8c8c0;
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 0 4px;
+  min-width: 50px;
+  cursor: pointer;
+}
+#format-toolbar .size-select:hover { border-color: #888; }
+
+/* 색상 버튼 (글자 색 / 형광펜) */
+#format-toolbar .color-wrap {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+}
+#format-toolbar .color-wrap .color-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  min-width: 28px;
+  border-radius: 3px 0 0 3px;
+  gap: 1px;
+}
+#format-toolbar .color-wrap .color-arrow {
+  border-radius: 0 3px 3px 0;
+  padding: 0 4px;
+  min-width: 16px;
+  font-size: 9px;
+  color: #555;
+  border-left: 1px solid transparent;
+}
+#format-toolbar .color-wrap:hover .color-btn,
+#format-toolbar .color-wrap:hover .color-arrow {
+  background: #fff;
+  border-color: #b0b0a8;
+}
+#format-toolbar .color-wrap:hover .color-arrow { border-left-color: #ddd; }
+#format-toolbar .color-letter {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+}
+#format-toolbar .color-bar {
+  display: block;
+  width: 14px;
+  height: 3px;
+  border-radius: 1px;
+}
+
+/* 컬러 팔레트 popover */
+#color-popover {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #c8c8c0;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  padding: 8px;
+  z-index: 10001;
+  width: 220px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+}
+#color-popover .cp-title {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+#color-popover .cp-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-bottom: 6px;
+}
+#color-popover .cp-swatch {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #d8d8d0;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.08s;
+}
+#color-popover .cp-swatch:hover {
+  transform: scale(1.15);
+  border-color: #1a3a6c;
+  z-index: 1;
+  position: relative;
+}
+#color-popover .cp-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  border-top: 1px solid #eee;
+  font-size: 11px;
+  color: #555;
+}
+#color-popover .cp-custom input[type="color"] {
   width: 24px;
   height: 24px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  padding: 1px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 0;
   cursor: pointer;
-  background: #fff;
 }
-#format-toolbar .size-label {
-  font-size: 10px;
-  color: #888;
-  padding: 0 4px;
-  min-width: 22px;
-  text-align: center;
+#color-popover .cp-none {
+  width: 100%;
+  background: #f8f8f5;
+  border: 1px solid #d8d8d0;
+  border-radius: 3px;
+  padding: 4px;
+  font-size: 11px;
+  color: #555;
+  cursor: pointer;
+  margin-top: 4px;
 }
+#color-popover .cp-none:hover { background: #fff; border-color: #888; }
 
 /* 점수 픽커 (1~5 모달) */
 #score-picker {
