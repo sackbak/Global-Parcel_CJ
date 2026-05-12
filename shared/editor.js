@@ -146,15 +146,8 @@
     });
 
     if (options.score) {
-      el.addEventListener('input', () => {
-        const v = el.innerHTML;
-        propagate(id, v, el);
-        validateAndRenderScore(el);
-        recalcAllHexagons();
-      });
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-      });
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => showScorePicker(el));
     }
   }
 
@@ -1389,13 +1382,7 @@
     }
   }
 
-  // 점수 셀 클릭 → 픽커 (contenteditable=false라 mousedown이 안전)
-  document.addEventListener('mousedown', (e) => {
-    const cell = e.target.closest && e.target.closest('.score-cell.editable');
-    if (!cell) return;
-    e.preventDefault();
-    showScorePicker(cell);
-  });
+  // 점수 셀 클릭 → register()에서 직접 el.addEventListener('click') 처리
 
   // 외부 클릭 / Esc / 숫자 키
   document.addEventListener('mousedown', (e) => {
