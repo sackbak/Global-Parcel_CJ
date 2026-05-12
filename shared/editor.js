@@ -889,10 +889,17 @@
     }
   });
 
+  // 컬러 팝 클릭 시 셀 포커스·currentEditable 유지
+  colorPop.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    e.preventDefault();
+  });
+
   // 셀 밖 클릭 시 툴바 숨김 (closest로 자식 클릭도 허용)
   document.addEventListener('mousedown', (e) => {
     if (toolbar.contains(e.target)) return;
     if (e.target.closest && e.target.closest('.editable')) return;
+    if (colorPop.contains(e.target)) return; // 컬러팝 클릭 시 currentEditable 유지
     hideToolbar();
     currentEditable = null;
   });
