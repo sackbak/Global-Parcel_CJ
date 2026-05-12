@@ -127,7 +127,7 @@
     const scope = options.scope || 'page';
     el.setAttribute('data-cell-id', id);
     el.setAttribute('data-cell-scope', scope);
-    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('contenteditable', options.score ? 'false' : 'true');
     el.setAttribute('spellcheck', 'false');
     el.classList.add('editable');
 
@@ -1389,8 +1389,8 @@
     }
   }
 
-  // 점수 셀 클릭 → 픽커
-  document.addEventListener('click', (e) => {
+  // 점수 셀 클릭 → 픽커 (contenteditable=false라 mousedown이 안전)
+  document.addEventListener('mousedown', (e) => {
     const cell = e.target.closest && e.target.closest('.score-cell.editable');
     if (!cell) return;
     e.preventDefault();
