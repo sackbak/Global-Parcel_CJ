@@ -994,14 +994,6 @@
     updateSizeLabel();
   });
 
-  toolbar.querySelector('input[type="color"]').addEventListener('input', (e) => {
-    if (!currentEditable) return;
-    currentEditable.focus();
-    document.execCommand('styleWithCSS', false, true);
-    document.execCommand('foreColor', false, e.target.value);
-    triggerSaveFromToolbar();
-  });
-
   function adjustFontSize(delta) {
     if (!currentEditable) return;
     // 포커스가 이미 셀에 없으면 셀로 옮김
