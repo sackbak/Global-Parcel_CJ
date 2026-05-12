@@ -965,7 +965,7 @@
 
   // 툴바 클릭 시 셀 포커스 유지
   toolbar.addEventListener('mousedown', (e) => {
-    if (e.target.tagName === 'INPUT') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     e.preventDefault();
   });
 
