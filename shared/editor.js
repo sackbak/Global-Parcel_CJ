@@ -1275,24 +1275,30 @@
       previewWrap.appendChild(clone);
     }
 
-    // 위치 결정 (cell 옆 또는 아래)
+    // 위치 결정: 셀 왼쪽 우선, 화면 중앙 폴백
     scorePicker.style.visibility = 'hidden';
     scorePicker.style.display = 'block';
     const pw = scorePicker.offsetWidth;
     const ph = scorePicker.offsetHeight;
     const rect = cell.getBoundingClientRect();
-    let top = rect.top;
-    let left = rect.right + 12;
-    if (left + pw > window.innerWidth - 16) {
-      left = rect.left - pw - 12;
-      if (left < 16) {
-        left = Math.max(16, rect.left);
-        top = rect.bottom + 8;
-      }
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // 셀 오른쪽에 공간 있으면 거기, 없으면 왼쪽, 둘 다 없으면 화면 중앙
+    let left, top;
+    if (rect.right + 12 + pw <= vw - 8) {
+      left = rect.right + 12;
+      top = rect.top;
+    } else if (rect.left - 12 - pw >= 8) {
+      left = rect.left - 12 - pw;
+      top = rect.top;
+    } else {
+      left = Math.max(8, Math.round((vw - pw) / 2));
+      top = rect.bottom + 8;
     }
-    if (top + ph > window.innerHeight - 16) {
-      top = Math.max(72, window.innerHeight - ph - 16);
-    }
+    // 세로 클램프
+    if (top + ph > vh - 8) top = Math.max(56, vh - ph - 8);
+    // 가로 최종 클램프 (픽커가 뷰포트 밖으로 절대 안 나가게)
+    left = Math.max(8, Math.min(left, vw - pw - 8));
     scorePicker.style.top = top + 'px';
     scorePicker.style.left = left + 'px';
     scorePicker.style.visibility = 'visible';
