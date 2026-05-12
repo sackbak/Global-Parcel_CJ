@@ -1001,23 +1001,45 @@
 
   function adjustFontSize(delta) {
     if (!currentEditable) return;
-    // 포커스가 이미 셀에 없으면 셀로 옮김
     if (document.activeElement !== currentEditable) currentEditable.focus();
     const sel = window.getSelection();
     if (!sel) return;
-    // 셀 안에 selection이 있는지 확인
+
     let hasSelectionInCell = false;
     if (sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       hasSelectionInCell = currentEditable.contains(r.commonAncestorContainer);
     }
-    // 셀 안에 selection이 없거나 collapsed면 셀 전체 선택
+
+    // 선택 없으면 셀 전체 크기 조정
     if (!hasSelectionInCell || sel.isCollapsed) {
+      const children = Array.from(currentEditable.childNodes);
+      const topSpan = (children.length === 1 &&
+                       children[0].nodeType === 1 &&
+                       children[0].tagName === 'SPAN' &&
+                       children[0].style.fontSize)
+                      ? children[0] : null;
+      if (topSpan) {
+        // 이전에 중첩된 font-size span이 남아있으면 모두 제거
+        topSpan.querySelectorAll('[style]').forEach(s => {
+          s.style.removeProperty('font-size');
+          if (!s.getAttribute('style')) s.removeAttribute('style');
+        });
+        const cur = parseFloat(topSpan.style.fontSize);
+        topSpan.style.fontSize = nextSize(cur, delta) + 'px';
+        const newRange = document.createRange();
+        newRange.selectNodeContents(topSpan);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        return;
+      }
+      // 아직 wrapper 없음 — 전체 선택 후 아래에서 wrap
       const range = document.createRange();
       range.selectNodeContents(currentEditable);
       sel.removeAllRanges();
       sel.addRange(range);
     }
+
     const range = sel.getRangeAt(0);
     const refEl = range.commonAncestorContainer.nodeType === 1
       ? range.commonAncestorContainer
