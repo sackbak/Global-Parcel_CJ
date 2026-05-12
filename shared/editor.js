@@ -460,46 +460,33 @@
       }
     }
 
-    // 3) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+    // 3) 서식 단축키
+    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
       const k = e.key.toLowerCase();
-      if (k === 'b' || k === 'i' || k === 'u') {
+      // Ctrl+B / I / U
+      if (!e.shiftKey && (k === 'b' || k === 'i' || k === 'u')) {
         e.preventDefault();
         document.execCommand('styleWithCSS', false, true);
         document.execCommand(k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline');
         triggerSaveFromToolbar();
         return;
       }
-      // 정렬 단축키: Ctrl+L / Ctrl+E / Ctrl+R
-      if (k === 'l') {
-        e.preventDefault();
-        document.execCommand('justifyLeft');
-        triggerSaveFromToolbar();
-        return;
+      // 정렬: Ctrl+L / Ctrl+E
+      if (!e.shiftKey && k === 'l') { e.preventDefault(); document.execCommand('justifyLeft'); triggerSaveFromToolbar(); return; }
+      if (!e.shiftKey && k === 'e') { e.preventDefault(); document.execCommand('justifyCenter'); triggerSaveFromToolbar(); return; }
+      // 크기: Ctrl+Shift+> (키보드 . 키) 키우기 / Ctrl+Shift+< (, 키) 줄이기
+      //       Ctrl++ / Ctrl+- 도 동작
+      if (e.shiftKey && (e.key === '>' || e.key === '.')) {
+        e.preventDefault(); adjustFontSize(1); triggerSaveFromToolbar(); updateSizeLabel(); return;
       }
-      if (k === 'e') {
-        e.preventDefault();
-        document.execCommand('justifyCenter');
-        triggerSaveFromToolbar();
-        return;
+      if (e.shiftKey && (e.key === '<' || e.key === ',')) {
+        e.preventDefault(); adjustFontSize(-1); triggerSaveFromToolbar(); updateSizeLabel(); return;
       }
-      if (k === 'r') {
-        // Ctrl+R은 새로고침이라 정렬 단축키로 잡지 않음
+      if (!e.shiftKey && (e.key === '+' || e.key === '=')) {
+        e.preventDefault(); adjustFontSize(1); triggerSaveFromToolbar(); updateSizeLabel(); return;
       }
-      // 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
-      if (e.key === '+' || e.key === '=' ) {
-        e.preventDefault();
-        adjustFontSize(1);
-        triggerSaveFromToolbar();
-        updateSizeLabel();
-        return;
-      }
-      if (e.key === '-' || e.key === '_') {
-        e.preventDefault();
-        adjustFontSize(-1);
-        triggerSaveFromToolbar();
-        updateSizeLabel();
-        return;
+      if (!e.shiftKey && (e.key === '-' || e.key === '_')) {
+        e.preventDefault(); adjustFontSize(-1); triggerSaveFromToolbar(); updateSizeLabel(); return;
       }
     }
 
@@ -717,10 +704,12 @@
     '<button type="button" data-cmd="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>' +
     '<button type="button" data-cmd="strikeThrough" title="취소선"><s>S</s></button>' +
     '<span class="sep"></span>' +
-    // 폰트 크기 드롭다운
-    '<select class="size-select" title="글자 크기">' +
+    // 폰트 크기 드롭다운 + 증감 버튼
+    '<button type="button" class="size-dec" title="글자 줄이기 (Ctrl+Shift+&lt;)">A−</button>' +
+    '<select class="size-select" title="글자 크기 (Ctrl+Shift+&gt; / &lt;)">' +
       [9,10,11,12,14,16,18,22,28].map(s => `<option value="${s}">${s}</option>`).join('') +
     '</select>' +
+    '<button type="button" class="size-inc" title="글자 키우기 (Ctrl+Shift+&gt;)">A+</button>' +
     '<span class="sep"></span>' +
     // 글자 색 / 형광펜
     '<div class="color-wrap" data-kind="fore"><button type="button" class="color-btn" title="글자 색"><span class="color-letter">A</span><span class="color-bar" style="background:#1a3a6c"></span></button><button type="button" class="color-arrow" title="색 선택">▾</button></div>' +
@@ -845,6 +834,10 @@
     if (e.target.closest('.color-wrap')) return;
     closeColorPop();
   });
+
+  // 크기 A+ / A- 버튼
+  toolbar.querySelector('.size-dec').addEventListener('click', () => { adjustFontSize(-1); triggerSaveFromToolbar(); updateSizeLabel(); });
+  toolbar.querySelector('.size-inc').addEventListener('click', () => { adjustFontSize(1); triggerSaveFromToolbar(); updateSizeLabel(); });
 
   // 크기 드롭다운
   toolbar.querySelector('.size-select').addEventListener('change', (e) => {
