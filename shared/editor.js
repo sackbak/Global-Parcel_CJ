@@ -884,6 +884,7 @@
     const editable = e.target.closest && e.target.closest('.editable');
     if (editable) {
       currentEditable = editable;
+      if (!editable.classList.contains('score-cell')) hideScorePicker();
       positionToolbar();
     }
   });
