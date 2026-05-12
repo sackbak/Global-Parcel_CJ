@@ -451,11 +451,22 @@
     // 셀 포커스 안 잡혀있으면 종료
     if (!currentEditable) return;
 
-    // 2) Enter / Alt+Enter: 텍스트 셀은 줄바꿈 (점수 셀은 register에서 blur 처리됨)
+    // 2) Enter: 텍스트 셀 줄바꿈 (Range API — execCommand는 td에서 묵음 실패하는 케이스 있음)
     if (e.key === 'Enter') {
       if (!currentEditable.classList.contains('score-cell')) {
         e.preventDefault();
-        document.execCommand('insertHTML', false, '<br>');
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          const br = document.createElement('br');
+          range.insertNode(br);
+          if (!br.nextSibling) br.parentNode.appendChild(document.createElement('br'));
+          range.setStartAfter(br);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
         return;
       }
     }
