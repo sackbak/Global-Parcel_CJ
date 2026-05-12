@@ -467,76 +467,47 @@
       }
     }
 
-    // 3) 서식 단축키 - Ctrl 조합
-    if (e.ctrlKey || e.metaKey) {
-      // Ctrl+Shift+> / Ctrl+Shift+. : 크기 ↑ (Word/Docs 스타일)
-      if (e.shiftKey && (e.key === '>' || e.key === '.')) {
+    // 3) 서식 단축키: Ctrl+B / Ctrl+I / Ctrl+U
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+      const k = e.key.toLowerCase();
+      if (k === 'b' || k === 'i' || k === 'u') {
         e.preventDefault();
-        runFontSizeAdjust(1);
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand(k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline');
+        triggerSaveFromToolbar();
         return;
       }
-      // Ctrl+Shift+< / Ctrl+Shift+, : 크기 ↓
-      if (e.shiftKey && (e.key === '<' || e.key === ',')) {
+      // 정렬 단축키: Ctrl+L / Ctrl+E / Ctrl+R
+      if (k === 'l') {
         e.preventDefault();
-        runFontSizeAdjust(-1);
+        document.execCommand('justifyLeft');
+        triggerSaveFromToolbar();
         return;
       }
-      // 그 외 Ctrl 단축키 (Shift 없음)
-      if (!e.shiftKey && !e.altKey) {
-        const k = e.key.toLowerCase();
-        if (k === 'b' || k === 'i' || k === 'u') {
-          e.preventDefault();
-          const cmd = k === 'b' ? 'bold' : k === 'i' ? 'italic' : 'underline';
-          if (!applyCmdToMulti(cmd, null)) {
-            document.execCommand('styleWithCSS', false, true);
-            document.execCommand(cmd);
-            triggerSaveFromToolbar();
-          }
-          return;
-        }
-        if (k === 'l') { e.preventDefault(); if (!applyCmdToMulti('justifyLeft', null)) { document.execCommand('justifyLeft'); triggerSaveFromToolbar(); } return; }
-        if (k === 'e') { e.preventDefault(); if (!applyCmdToMulti('justifyCenter', null)) { document.execCommand('justifyCenter'); triggerSaveFromToolbar(); } return; }
-        // 크기 단축키: Ctrl++ / Ctrl+= / Ctrl+-
-        if (e.key === '+' || e.key === '=') {
-          e.preventDefault();
-          runFontSizeAdjust(1);
-          return;
-        }
-        if (e.key === '-' || e.key === '_') {
-          e.preventDefault();
-          runFontSizeAdjust(-1);
-          return;
-        }
-      }
-    }
-
-    function runFontSizeAdjust(delta) {
-      // 다중 셀 우선
-      if (multiSelected.size > 0) {
-        multiSelected.forEach(cell => {
-          const cur = parseFloat(window.getComputedStyle(cell).fontSize);
-          const next = nextSize(cur, delta);
-          cell.focus();
-          const range = document.createRange();
-          range.selectNodeContents(cell);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-          const span = document.createElement('span');
-          span.style.fontSize = next + 'px';
-          try { span.appendChild(range.extractContents()); range.insertNode(span); } catch (e) {}
-          const id = cell.getAttribute('data-cell-id');
-          const scope = cell.getAttribute('data-cell-scope');
-          const list = cellMap.get(id);
-          const sectionId = list?.[0]?.sectionId;
-          saveOne(scope, id, cell.innerHTML, sectionId);
-          propagate(id, cell.innerHTML, cell);
-        });
+      if (k === 'e') {
+        e.preventDefault();
+        document.execCommand('justifyCenter');
+        triggerSaveFromToolbar();
         return;
       }
-      adjustFontSize(delta);
-      triggerSaveFromToolbar();
-      updateSizeLabel();
+      if (k === 'r') {
+        // Ctrl+R은 새로고침이라 정렬 단축키로 잡지 않음
+      }
+      // 크기 단축키: Ctrl++ / Ctrl+- (=과 -)
+      if (e.key === '+' || e.key === '=' ) {
+        e.preventDefault();
+        adjustFontSize(1);
+        triggerSaveFromToolbar();
+        updateSizeLabel();
+        return;
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        adjustFontSize(-1);
+        triggerSaveFromToolbar();
+        updateSizeLabel();
+        return;
+      }
     }
 
     // 4) Tab / Shift+Tab — 활성 탭의 다음/이전 셀로 이동 (엑셀스러움)
@@ -842,20 +813,20 @@
     currentColorKind = null;
   }
   function applyColor(kind, color) {
-    const cmd = kind === 'fore' ? 'foreColor' : 'hiliteColor';
-    const finalColor = (kind === 'back' && color === 'transparent') ? 'transparent' : color;
-    // 다중 선택 우선
-    if (!applyCmdToMulti(cmd, finalColor)) {
-      if (!currentEditable) return;
-      currentEditable.focus();
-      document.execCommand('styleWithCSS', false, true);
-      document.execCommand(cmd, false, finalColor);
-      triggerSaveFromToolbar();
+    if (!currentEditable) return;
+    currentEditable.focus();
+    document.execCommand('styleWithCSS', false, true);
+    const cmd = kind === 'fore' ? 'foreColor' : (color === 'transparent' ? 'hiliteColor' : 'hiliteColor');
+    if (kind === 'back' && color === 'transparent') {
+      document.execCommand('hiliteColor', false, 'transparent');
+    } else {
+      document.execCommand(cmd, false, color);
     }
     // 툴바 색 표시 갱신
     const wrap = toolbar.querySelector(`.color-wrap[data-kind="${kind}"] .color-bar`);
     if (wrap) wrap.style.background = color === 'transparent' ? 'repeating-linear-gradient(45deg,#ccc,#ccc 2px,#fff 2px,#fff 4px)' : color;
     closeColorPop();
+    triggerSaveFromToolbar();
   }
 
   // 컬러 버튼 핸들러
@@ -884,9 +855,6 @@
 
   // 크기 드롭다운
   toolbar.querySelector('.size-select').addEventListener('change', (e) => {
-    const sizePx = e.target.value;
-    // 다중 선택 우선
-    if (applySizeToMulti(sizePx)) return;
     if (!currentEditable) return;
     currentEditable.focus();
     const sel = window.getSelection();
@@ -898,7 +866,7 @@
     }
     const range = sel.getRangeAt(0);
     const span = document.createElement('span');
-    span.style.fontSize = sizePx + 'px';
+    span.style.fontSize = e.target.value + 'px';
     try {
       span.appendChild(range.extractContents());
       range.insertNode(span);
@@ -1012,11 +980,8 @@
     const action = btn.dataset.action;
 
     if (cmd) {
-      // 다중 선택 우선
-      if (!applyCmdToMulti(cmd, null)) {
-        document.execCommand('styleWithCSS', false, true);
-        document.execCommand(cmd, false, null);
-      }
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand(cmd, false, null);
     } else if (action === 'link') {
       const url = prompt('링크 URL 입력 (https:// 포함):', 'https://');
       if (url && url.trim() && url.trim() !== 'https://') {
@@ -1105,7 +1070,7 @@
   window.addEventListener('scroll', () => { if (currentEditable) positionToolbar(); }, true);
   window.addEventListener('resize', () => { if (currentEditable) positionToolbar(); });
 
-  // ---------- Excel/Word 붙여넣기: 단일 셀 + Excel 다중 셀 일괄 ----------
+  // ---------- Excel/Word 붙여넣기: 단일 셀 서식 유지 + Excel 다중 셀 일괄 ----------
   document.addEventListener('paste', (e) => {
     const target = e.target.closest && e.target.closest('.editable');
     if (!target) return;
@@ -1114,7 +1079,6 @@
     const text = e.clipboardData.getData('text/plain');
 
     if (target.classList.contains('score-cell')) {
-      // 점수 셀은 1~5 숫자만 받음 (픽커 사용 권장)
       const m = text.match(/[1-5]/);
       if (m) {
         target.textContent = m[0];
@@ -1125,52 +1089,38 @@
       return;
     }
 
-    // Excel 다중 셀 감지: 탭(\t)이 있으면 다중 열, 줄바꿈이 여러 개면 다중 행
+    // Excel 다중 셀 감지: 탭(\t) 또는 여러 줄
     const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const hasTab = normalized.includes('\t');
     const rows = normalized.split('\n').filter(r => r !== '');
-    const isMultiCell = hasTab || rows.length > 1;
-
-    if (isMultiCell) {
-      // TSV → 평탄화된 값 배열
+    if (hasTab || rows.length > 1) {
       const values = [];
       rows.forEach(row => {
-        const cols = hasTab ? row.split('\t') : [row];
-        cols.forEach(v => values.push(v));
+        (hasTab ? row.split('\t') : [row]).forEach(v => values.push(v));
       });
-      // 후행 빈 값 제거
       while (values.length && values[values.length - 1].trim() === '') values.pop();
-
       if (values.length > 1) {
         const section = target.closest('[data-page-content]');
-        const allContent = Array.from(
-          section ? section.querySelectorAll('.editable:not(.score-cell)') : []
-        );
+        const allContent = Array.from(section ? section.querySelectorAll('.editable:not(.score-cell)') : []);
         const startIdx = allContent.indexOf(target);
         if (startIdx >= 0) {
           let filled = 0;
           for (let i = startIdx; i < allContent.length && filled < values.length; i++) {
             const cell = allContent[i];
             const v = values[filled++];
-            cell.innerHTML = v
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/\n/g, '<br>');
+            cell.innerHTML = v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
             const id = cell.getAttribute('data-cell-id');
             const scope = cell.getAttribute('data-cell-scope');
             const list = cellMap.get(id);
-            const sectionId = list?.[0]?.sectionId;
-            saveOne(scope, id, cell.innerHTML, sectionId);
+            saveOne(scope, id, cell.innerHTML, list?.[0]?.sectionId);
             propagate(id, cell.innerHTML, cell);
           }
-          showSaveIndicator(`${filled}개 셀에 붙여넣기`);
+          showSaveIndicator(`${filled}개 셀 붙여넣기`);
           return;
         }
       }
     }
 
-    // 단일 셀 붙여넣기 (기존 동작)
     let toInsert;
     if (html) {
       toInsert = sanitizePastedHtml(html);
@@ -1242,147 +1192,6 @@
     });
 
     return body.innerHTML;
-  }
-
-  // ---------- 다중 셀 선택 (드래그 / Ctrl+클릭 / Shift+클릭) ----------
-  const multiSelected = new Set();
-  let dragStartCell = null;
-  let dragInitialPos = null;
-  let dragActive = false;
-  let lastClickedCell = null;
-
-  function addToMulti(cell) {
-    if (!cell || cell.classList.contains('score-cell')) return; // 점수 셀은 픽커 사용
-    multiSelected.add(cell);
-    cell.classList.add('multi-selected');
-  }
-  function clearMulti() {
-    multiSelected.forEach(c => c.classList.remove('multi-selected'));
-    multiSelected.clear();
-  }
-  function selectCellRange(from, to) {
-    clearMulti();
-    const sec = from.closest('[data-page-content]');
-    if (!sec) return;
-    const all = Array.from(sec.querySelectorAll('.editable'));
-    const i1 = all.indexOf(from), i2 = all.indexOf(to);
-    if (i1 < 0 || i2 < 0) return;
-    const [lo, hi] = [Math.min(i1, i2), Math.max(i1, i2)];
-    for (let i = lo; i <= hi; i++) addToMulti(all[i]);
-  }
-
-  document.addEventListener('mousedown', (e) => {
-    const cell = e.target.closest && e.target.closest('.editable');
-    if (!cell) {
-      if (!toolbar.contains(e.target) && !document.getElementById('color-popover')?.contains(e.target) && !document.getElementById('score-picker')?.contains(e.target)) {
-        clearMulti();
-      }
-      return;
-    }
-    if (cell.classList.contains('score-cell')) { clearMulti(); return; }
-
-    if (e.shiftKey && lastClickedCell) {
-      e.preventDefault();
-      selectCellRange(lastClickedCell, cell);
-      currentEditable = cell;
-      positionToolbar();
-      return;
-    }
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      if (multiSelected.has(cell)) {
-        cell.classList.remove('multi-selected');
-        multiSelected.delete(cell);
-      } else addToMulti(cell);
-      currentEditable = cell;
-      positionToolbar();
-      return;
-    }
-    lastClickedCell = cell;
-    dragStartCell = cell;
-    dragInitialPos = { x: e.clientX, y: e.clientY };
-    dragActive = false;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!dragStartCell || !dragInitialPos) return;
-    const dx = Math.abs(e.clientX - dragInitialPos.x);
-    const dy = Math.abs(e.clientY - dragInitialPos.y);
-    if (!dragActive && (dx > 5 || dy > 5)) {
-      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
-      if (overCell && overCell !== dragStartCell && !overCell.classList.contains('score-cell')) {
-        dragActive = true;
-        clearMulti();
-        document.body.classList.add('cell-dragging');
-        window.getSelection()?.removeAllRanges();
-      }
-    }
-    if (dragActive) {
-      e.preventDefault();
-      window.getSelection()?.removeAllRanges();
-      const overCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.editable');
-      if (overCell && !overCell.classList.contains('score-cell')) {
-        selectCellRange(dragStartCell, overCell);
-      }
-    }
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (dragActive) {
-      document.body.classList.remove('cell-dragging');
-      window.getSelection()?.removeAllRanges();
-      if (multiSelected.size > 0) { currentEditable = dragStartCell; positionToolbar(); }
-    }
-    dragStartCell = null; dragInitialPos = null; dragActive = false;
-  });
-
-  document.addEventListener('selectstart', (e) => { if (dragActive) e.preventDefault(); });
-
-  // 다중 셀에 명령 적용 - 셀별 selectAll + execCommand
-  function applyCmdToMulti(cmd, value, useCSS = true) {
-    if (multiSelected.size === 0) return false;
-    multiSelected.forEach(cell => {
-      cell.focus();
-      const range = document.createRange();
-      range.selectNodeContents(cell);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      if (useCSS) document.execCommand('styleWithCSS', false, true);
-      document.execCommand(cmd, false, value);
-      const id = cell.getAttribute('data-cell-id');
-      const scope = cell.getAttribute('data-cell-scope');
-      const list = cellMap.get(id);
-      const sectionId = list?.[0]?.sectionId;
-      saveOne(scope, id, cell.innerHTML, sectionId);
-      propagate(id, cell.innerHTML, cell);
-    });
-    return true;
-  }
-  // 다중 셀에 폰트 크기 적용
-  function applySizeToMulti(sizePx) {
-    if (multiSelected.size === 0) return false;
-    multiSelected.forEach(cell => {
-      cell.focus();
-      const range = document.createRange();
-      range.selectNodeContents(cell);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      const span = document.createElement('span');
-      span.style.fontSize = sizePx + 'px';
-      try {
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-      } catch (e) {}
-      const id = cell.getAttribute('data-cell-id');
-      const scope = cell.getAttribute('data-cell-scope');
-      const list = cellMap.get(id);
-      const sectionId = list?.[0]?.sectionId;
-      saveOne(scope, id, cell.innerHTML, sectionId);
-      propagate(id, cell.innerHTML, cell);
-    });
-    return true;
   }
 
   // ---------- 점수 픽커 (1~5 큰 버튼 모달) ----------

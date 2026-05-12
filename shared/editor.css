@@ -49,30 +49,6 @@ body { padding: 0 12px 24px !important; }
   background: #ffe2e2 !important;
 }
 
-/* 다중 셀 선택 */
-.editable.multi-selected {
-  outline: 2px solid #1a3a6c !important;
-  outline-offset: -1px;
-  background: rgba(26, 58, 108, 0.08) !important;
-  position: relative;
-  z-index: 1;
-}
-.editable.multi-selected:hover {
-  background: rgba(26, 58, 108, 0.12) !important;
-}
-
-/* 드래그 중: 텍스트 선택 차단 + cursor 변경 */
-body.cell-dragging,
-body.cell-dragging * {
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  cursor: crosshair !important;
-}
-body.cell-dragging .editable,
-body.cell-dragging .editable * {
-  -webkit-user-modify: read-only !important;
-}
-
 /* 우상단 버튼들 */
 #export-btn, #copy-btn {
   position: fixed;
